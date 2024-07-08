@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.WorkflowFormBlockType = void 0;
+exports.workflowFormFieldBlockTypes = exports.WorkflowFormBlockType = void 0;
 exports.default = getBlockSchema;
 const libphonenumber_js_1 = require("libphonenumber-js");
 const zod_1 = __importDefault(require("zod"));
@@ -22,6 +22,15 @@ var WorkflowFormBlockType;
     WorkflowFormBlockType["Divider"] = "divider";
     WorkflowFormBlockType["Paragraph"] = "paragraph";
 })(WorkflowFormBlockType || (exports.WorkflowFormBlockType = WorkflowFormBlockType = {}));
+exports.workflowFormFieldBlockTypes = [
+    WorkflowFormBlockType.CheckboxField,
+    WorkflowFormBlockType.SingleSelectField,
+    WorkflowFormBlockType.TextField,
+    WorkflowFormBlockType.FileField,
+    WorkflowFormBlockType.EmailField,
+    WorkflowFormBlockType.UrlField,
+    WorkflowFormBlockType.PhoneField,
+];
 function getBlockSchema(block) {
     switch (block.type) {
         case WorkflowFormBlockType.FileField: {

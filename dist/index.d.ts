@@ -118,7 +118,8 @@ export type WorkflowFormBlock = {
     type: WorkflowFormBlockType.Paragraph;
     [WorkflowFormBlockType.Paragraph]: WorkflowFormText[];
 });
-export type WorkflowFormFieldBlockTypes = Extract<WorkflowFormBlockType, WorkflowFormBlockType.CheckboxField | WorkflowFormBlockType.SingleSelectField | WorkflowFormBlockType.TextField | WorkflowFormBlockType.FileField | WorkflowFormBlockType.EmailField | WorkflowFormBlockType.UrlField | WorkflowFormBlockType.PhoneField>;
+export declare const workflowFormFieldBlockTypes: readonly [WorkflowFormBlockType.CheckboxField, WorkflowFormBlockType.SingleSelectField, WorkflowFormBlockType.TextField, WorkflowFormBlockType.FileField, WorkflowFormBlockType.EmailField, WorkflowFormBlockType.UrlField, WorkflowFormBlockType.PhoneField];
+export type WorkflowFormFieldBlockTypes = (typeof workflowFormFieldBlockTypes)[number];
 export type WorkflowFormFieldBlock = Extract<WorkflowFormBlock, {
     type: WorkflowFormFieldBlockTypes;
 }>;

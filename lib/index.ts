@@ -144,16 +144,18 @@ export type WorkflowFormBlock = {
     }
 );
 
-export type WorkflowFormFieldBlockTypes = Extract<
-  WorkflowFormBlockType,
-  | WorkflowFormBlockType.CheckboxField
-  | WorkflowFormBlockType.SingleSelectField
-  | WorkflowFormBlockType.TextField
-  | WorkflowFormBlockType.FileField
-  | WorkflowFormBlockType.EmailField
-  | WorkflowFormBlockType.UrlField
-  | WorkflowFormBlockType.PhoneField
->;
+export const workflowFormFieldBlockTypes = [
+  WorkflowFormBlockType.CheckboxField,
+  WorkflowFormBlockType.SingleSelectField,
+  WorkflowFormBlockType.TextField,
+  WorkflowFormBlockType.FileField,
+  WorkflowFormBlockType.EmailField,
+  WorkflowFormBlockType.UrlField,
+  WorkflowFormBlockType.PhoneField,
+] as const;
+
+export type WorkflowFormFieldBlockTypes =
+  (typeof workflowFormFieldBlockTypes)[number];
 
 export type WorkflowFormFieldBlock = Extract<
   WorkflowFormBlock,
