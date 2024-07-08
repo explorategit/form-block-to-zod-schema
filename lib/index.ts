@@ -166,10 +166,10 @@ export default function getBlockSchema(block: WorkflowFormBlock) {
       const fileField = block[WorkflowFormBlockType.FileField];
       let schema = zod.array(zod.string());
       if (!fileField.optional) {
-        schema = schema.min(1);
+        schema = schema.min(1, "At least one file is required");
       }
       if (!fileField.multiple) {
-        schema = schema.max(1);
+        schema = schema.max(1, "Only one file is allowed");
       }
       return schema;
     }
