@@ -101,6 +101,7 @@ export type WorkflowFormBlock = {
         description: string | null;
         optional: boolean;
         allowedDomains: string[] | null;
+        exact: boolean;
       };
     }
   | {
@@ -259,8 +260,12 @@ export default function getBlockSchema(block: WorkflowFormBlock) {
             if (urlField.optional && !value) {
               return false;
             }
-            const regex = new RegExp(`(${urlField.allowedDomains!.join("|")})`);
-            return regex.test(value);
+            try {
+              const url = new URL(value);
+              return urlField.allowedDomains!.includes(url.hostname);
+            } catch {
+              return false;
+            }
           },
           {
             message: `Domain must be ${formatter.format(
