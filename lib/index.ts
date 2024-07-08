@@ -35,11 +35,12 @@ export type WorkflowFormBlock = {
 } & (
   | {
       type: WorkflowFormBlockType.CheckboxField;
-      value: boolean;
+      value: boolean | null;
       [WorkflowFormBlockType.CheckboxField]: {
         label: string;
         description: string | null;
         optional: boolean;
+        required: boolean;
       };
     }
   | {
@@ -150,6 +151,7 @@ export type WorkflowFormFieldBlock = Extract<
 >;
 
 function joinList(list: string[], booleanOperator: "or" | "and" = "or") {
+  if (list.length <= 1) return list[0];
   return `${list.slice(0, -1).join(", ")} ${booleanOperator} ${
     list.slice(-1)[0]
   }`;
@@ -176,16 +178,32 @@ export default function getBlockSchema(block: WorkflowFormBlock) {
     case WorkflowFormBlockType.CheckboxField: {
       const checkboxField = block[WorkflowFormBlockType.CheckboxField];
       let schema: zod.ZodSchema = zod.boolean();
-      if (!checkboxField.optional) {
+      if (checkboxField.required) {
         schema = schema.refine((bool) => bool === true, {
           message: "This field is required",
         });
+      }
+      if (checkboxField.optional) {
+        schema = schema.optional();
       }
       return schema;
     }
     case WorkflowFormBlockType.SingleSelectField: {
       const singleSelectField = block[WorkflowFormBlockType.SingleSelectField];
-      let schema: zod.ZodSchema = zod.string();
+      const values = singleSelectField.options.map(
+        (option) => option.value
+      ) as readonly string[];
+      let schema: zod.ZodSchema = zod
+        .string()
+        .refine(
+          (value) =>
+            (singleSelectField.optional && !value) || values.includes(value),
+          {
+            message: `Value must be one of ${joinList(
+              values.map((value) => `"${value}"`)
+            )}`,
+          }
+        );
       if (singleSelectField.optional) {
         schema = schema.optional();
       }
@@ -193,7 +211,7 @@ export default function getBlockSchema(block: WorkflowFormBlock) {
     }
     case WorkflowFormBlockType.TextField: {
       const textField = block[WorkflowFormBlockType.TextField];
-      let schema = zod.string();
+      let schema: zod.ZodString = zod.string();
       if (textField.pattern) {
         schema = schema.regex(
           new RegExp(textField.pattern.value),
@@ -205,8 +223,7 @@ export default function getBlockSchema(block: WorkflowFormBlock) {
       }
       if (textField.minLength) {
         schema = schema.min(textField.minLength);
-      }
-      if (!textField.optional) {
+      } else if (!textField.optional) {
         schema = schema.min(1);
       }
       return schema;
@@ -216,9 +233,10 @@ export default function getBlockSchema(block: WorkflowFormBlock) {
       let schema: zod.ZodSchema = zod.string().email();
       if (emailField.allowedDomains) {
         schema = schema.refine(
-          (email) => {
-            if (!(typeof email === "string")) return false;
-            const domain = email.split("@")[1];
+          (value) => {
+            if (!(typeof value === "string") || (emailField.optional && !value))
+              return false;
+            const domain = value.split("@")[1];
             return emailField.allowedDomains!.includes(domain);
           },
           {
@@ -236,6 +254,21 @@ export default function getBlockSchema(block: WorkflowFormBlock) {
     case WorkflowFormBlockType.UrlField: {
       const urlField = block[WorkflowFormBlockType.UrlField];
       let schema: zod.ZodSchema = zod.string().url();
+      if (urlField.allowedDomains) {
+        schema = schema.refine(
+          (value) => {
+            if (!(typeof value === "string") || (urlField.optional && !value))
+              return false;
+            const regex = new RegExp(`(${urlField.allowedDomains!.join("|")})`);
+            return regex.test(value);
+          },
+          {
+            message: `Domain must be ${joinList(
+              urlField.allowedDomains.map((domain) => `"${domain}"`)
+            )}`,
+          }
+        );
+      }
       if (urlField.optional) {
         schema = schema.optional();
       }
@@ -283,6 +316,9 @@ export default function getBlockSchema(block: WorkflowFormBlock) {
           return zod.NEVER;
         }
       });
+      if (phoneField.optional) {
+        schema = schema.optional();
+      }
       return schema;
     }
     default:
