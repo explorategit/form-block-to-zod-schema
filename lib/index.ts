@@ -150,18 +150,6 @@ export type WorkflowFormFieldBlock = Extract<
   { type: WorkflowFormFieldBlockTypes }
 >;
 
-function joinList(list: string[], booleanOperator: "or" | "and" = "or") {
-  if (list.length <= 1) return list[0];
-  return `${list.slice(0, -1).join(", ")} ${booleanOperator} ${
-    list.slice(-1)[0]
-  }`;
-}
-
-function getDefaultCountry() {
-  if (typeof navigator === "undefined") return undefined;
-  return navigator.language.split("-")[1];
-}
-
 export default function getBlockSchema(block: WorkflowFormBlock) {
   switch (block.type) {
     case WorkflowFormBlockType.FileField: {
@@ -193,15 +181,19 @@ export default function getBlockSchema(block: WorkflowFormBlock) {
       const values = singleSelectField.options.map(
         (option) => option.value
       ) as readonly string[];
+      const formatter = new Intl.ListFormat("en-AU", {
+        style: "long",
+        type: "disjunction",
+      });
       let schema: zod.ZodSchema = zod
         .string()
         .refine(
           (value) =>
             (singleSelectField.optional && !value) || values.includes(value),
           {
-            message: `Value must be one of ${joinList(
-              values.map((value) => `"${value}"`)
-            )}`,
+            message: `Must be one of ${formatter.format(
+              values.map((value) => `\`${value}\``)
+            )}.`,
           }
         );
       if (singleSelectField.optional) {
@@ -231,6 +223,10 @@ export default function getBlockSchema(block: WorkflowFormBlock) {
     case WorkflowFormBlockType.EmailField: {
       const emailField = block[WorkflowFormBlockType.EmailField];
       let schema: zod.ZodSchema = zod.string().email();
+      const formatter = new Intl.ListFormat("en-AU", {
+        style: "long",
+        type: "disjunction",
+      });
       if (emailField.allowedDomains) {
         schema = schema.refine(
           (value) => {
@@ -240,7 +236,7 @@ export default function getBlockSchema(block: WorkflowFormBlock) {
             return emailField.allowedDomains!.includes(domain);
           },
           {
-            message: `Domain must be ${joinList(
+            message: `Domain must be ${formatter.format(
               emailField.allowedDomains.map((domain) => `"${domain}"`)
             )}`,
           }
@@ -254,6 +250,10 @@ export default function getBlockSchema(block: WorkflowFormBlock) {
     case WorkflowFormBlockType.UrlField: {
       const urlField = block[WorkflowFormBlockType.UrlField];
       let schema: zod.ZodSchema = zod.string().url();
+      const formatter = new Intl.ListFormat("en-AU", {
+        style: "long",
+        type: "disjunction",
+      });
       if (urlField.allowedDomains) {
         schema = schema.refine(
           (value) => {
@@ -263,7 +263,7 @@ export default function getBlockSchema(block: WorkflowFormBlock) {
             return regex.test(value);
           },
           {
-            message: `Domain must be ${joinList(
+            message: `Domain must be ${formatter.format(
               urlField.allowedDomains.map((domain) => `"${domain}"`)
             )}`,
           }
@@ -276,11 +276,20 @@ export default function getBlockSchema(block: WorkflowFormBlock) {
     }
     case WorkflowFormBlockType.PhoneField: {
       const phoneField = block[WorkflowFormBlockType.PhoneField];
+      const formatter = new Intl.ListFormat("en-AU", {
+        style: "long",
+        type: "disjunction",
+      });
       let schema: zod.ZodSchema = zod.string().superRefine((val, ctx) => {
         try {
           if (phoneField.optional && !val) return zod.NEVER;
 
-          const defaultCountry = getDefaultCountry() as CountryCode | undefined;
+          let defaultCountry: undefined | CountryCode = undefined;
+
+          if (typeof navigator !== "undefined") {
+            defaultCountry = navigator.language.split("-")[1] as CountryCode;
+          }
+
           const phoneNumber = parsePhoneNumber(val, {
             defaultCountry,
           });
@@ -294,7 +303,7 @@ export default function getBlockSchema(block: WorkflowFormBlock) {
             ) {
               ctx.addIssue({
                 code: zod.ZodIssueCode.custom,
-                message: `Phone number must be from ${joinList(
+                message: `Phone number must be from ${formatter.format(
                   phoneField.allowedCountries.map(
                     (countryCode) =>
                       `${countryCode} (+${getCountryCallingCode(
