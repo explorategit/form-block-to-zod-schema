@@ -257,8 +257,9 @@ export default function getBlockSchema(block: WorkflowFormBlock) {
       if (urlField.allowedDomains) {
         schema = schema.refine(
           (value) => {
-            if (!(typeof value === "string") || (urlField.optional && !value))
+            if (urlField.optional && !value) {
               return false;
+            }
             const regex = new RegExp(`(${urlField.allowedDomains!.join("|")})`);
             return regex.test(value);
           },
