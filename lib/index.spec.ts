@@ -243,6 +243,7 @@ describe("getBlockSchema", () => {
 
       expect(schema).toBeDefined();
       expect(() => schema?.parse("https://explorate.co")).not.toThrow();
+      expect(() => schema?.parse("https://subdomain.explorate.co")).toThrow();
       expect(() => schema?.parse("https://google.com")).toThrow();
       expect(() => schema?.parse(undefined)).toThrow();
     });
@@ -263,6 +264,7 @@ describe("getBlockSchema", () => {
 
       expect(schema).toBeDefined();
       expect(() => schema?.parse("https://explorate.co")).not.toThrow();
+      expect(() => schema?.parse("https://subdomain.explorate.co")).toThrow();
       expect(() => schema?.parse("https://google.com")).toThrow();
       expect(() => schema?.parse(undefined)).not.toThrow();
     });
