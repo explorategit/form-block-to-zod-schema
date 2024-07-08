@@ -1,4 +1,5 @@
-export enum WorkflowFormBlockType {
+import zod from "zod";
+export declare enum WorkflowFormBlockType {
   SingleSelectField = "single_select_field",
   TextField = "text_field",
   FileField = "file_field",
@@ -12,7 +13,6 @@ export enum WorkflowFormBlockType {
   Divider = "divider",
   Paragraph = "paragraph",
 }
-
 export interface WorkflowFormText {
   content: string;
   url: string | null;
@@ -22,7 +22,6 @@ export interface WorkflowFormText {
     attribute: string;
   } | null;
 }
-
 export type WorkflowFormBlock = {
   id: number;
 } & (
@@ -125,7 +124,6 @@ export type WorkflowFormBlock = {
       [WorkflowFormBlockType.Paragraph]: WorkflowFormText[];
     }
 );
-
 export type WorkflowFormFieldBlockTypes = Extract<
   WorkflowFormBlockType,
   | WorkflowFormBlockType.CheckboxField
@@ -136,8 +134,12 @@ export type WorkflowFormFieldBlockTypes = Extract<
   | WorkflowFormBlockType.UrlField
   | WorkflowFormBlockType.PhoneField
 >;
-
 export type WorkflowFormFieldBlock = Extract<
   WorkflowFormBlock,
-  { type: WorkflowFormFieldBlockTypes }
+  {
+    type: WorkflowFormFieldBlockTypes;
+  }
 >;
+export default function getBlockSchema(
+  block: WorkflowFormBlock
+): zod.ZodType<any, zod.ZodTypeDef, any> | null;

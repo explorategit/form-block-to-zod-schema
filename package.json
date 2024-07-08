@@ -4,10 +4,19 @@
   "description": "",
   "author": "",
   "license": "ISC",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
   "dependencies": {
     "libphonenumber-js": "^1.11.4",
     "zod": "^3.23.8"
   },
-  "main": "./lib/index.js",
-  "types": "./lib/index.d.ts"
+  "peerDependencies": {
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.3"
+  }
 }
