@@ -101,7 +101,6 @@ export type WorkflowFormBlock = {
         description: string | null;
         optional: boolean;
         allowedDomains: string[] | null;
-        exact: boolean;
       };
     }
   | {
