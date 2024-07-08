@@ -243,7 +243,7 @@ export default function getBlockSchema(block: WorkflowFormBlock) {
             if (emailField.optional && !value) return false;
             const hostname = value.split("@")[1];
             return emailField.allowedDomains!.some(({ domain, exact }) =>
-              exact ? hostname === domain : hostname.endsWith(domain)
+              exact ? hostname === domain : hostname?.endsWith(domain)
             );
           },
           {

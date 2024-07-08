@@ -94,7 +94,7 @@ function getBlockSchema(block) {
                     if (emailField.optional && !value)
                         return false;
                     const hostname = value.split("@")[1];
-                    return emailField.allowedDomains.some(({ domain, exact }) => exact ? hostname === domain : hostname.endsWith(domain));
+                    return emailField.allowedDomains.some(({ domain, exact }) => exact ? hostname === domain : hostname?.endsWith(domain));
                 }, {
                     message: `Domain must be ${formatter.format(emailField.allowedDomains.map(({ domain }) => `"${domain}"`))}`,
                 });
