@@ -236,6 +236,7 @@ describe("getBlockSchema", () => {
           optional: false,
           description: null,
           allowedDomains: ["explorate.co"],
+          exact: true,
         },
       };
       const schema = getBlockSchema(block);
@@ -255,6 +256,7 @@ describe("getBlockSchema", () => {
           optional: true,
           description: null,
           allowedDomains: ["explorate.co"],
+          exact: true,
         },
       };
       const schema = getBlockSchema(block);

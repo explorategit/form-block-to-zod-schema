@@ -118,7 +118,9 @@ function getBlockSchema(block) {
                     }
                     try {
                         const url = new URL(value);
-                        return urlField.allowedDomains.includes(url.hostname);
+                        return urlField.allowedDomains.some((domain) => urlField.exact
+                            ? url.hostname === domain
+                            : url.hostname.endsWith(domain));
                     }
                     catch {
                         return false;
