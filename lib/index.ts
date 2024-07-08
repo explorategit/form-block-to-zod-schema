@@ -223,15 +223,14 @@ export default function getBlockSchema(block: WorkflowFormBlock) {
     case WorkflowFormBlockType.EmailField: {
       const emailField = block[WorkflowFormBlockType.EmailField];
       let schema: zod.ZodSchema = zod.string().email();
-      const formatter = new Intl.ListFormat("en-AU", {
-        style: "long",
-        type: "disjunction",
-      });
       if (emailField.allowedDomains) {
+        const formatter = new Intl.ListFormat("en-AU", {
+          style: "long",
+          type: "disjunction",
+        });
         schema = schema.refine(
           (value) => {
-            if (!(typeof value === "string") || (emailField.optional && !value))
-              return false;
+            if (emailField.optional && !value) return false;
             const domain = value.split("@")[1];
             return emailField.allowedDomains!.includes(domain);
           },
@@ -250,11 +249,11 @@ export default function getBlockSchema(block: WorkflowFormBlock) {
     case WorkflowFormBlockType.UrlField: {
       const urlField = block[WorkflowFormBlockType.UrlField];
       let schema: zod.ZodSchema = zod.string().url();
-      const formatter = new Intl.ListFormat("en-AU", {
-        style: "long",
-        type: "disjunction",
-      });
       if (urlField.allowedDomains) {
+        const formatter = new Intl.ListFormat("en-AU", {
+          style: "long",
+          type: "disjunction",
+        });
         schema = schema.refine(
           (value) => {
             if (urlField.optional && !value) {
@@ -277,10 +276,6 @@ export default function getBlockSchema(block: WorkflowFormBlock) {
     }
     case WorkflowFormBlockType.PhoneField: {
       const phoneField = block[WorkflowFormBlockType.PhoneField];
-      const formatter = new Intl.ListFormat("en-AU", {
-        style: "long",
-        type: "disjunction",
-      });
       let schema: zod.ZodSchema = zod.string().superRefine((val, ctx) => {
         try {
           if (phoneField.optional && !val) return zod.NEVER;
@@ -296,6 +291,10 @@ export default function getBlockSchema(block: WorkflowFormBlock) {
           });
 
           if (phoneField.allowedCountries) {
+            const formatter = new Intl.ListFormat("en-AU", {
+              style: "long",
+              type: "disjunction",
+            });
             if (
               (!phoneNumber.country && !defaultCountry) ||
               !phoneField.allowedCountries.includes(
