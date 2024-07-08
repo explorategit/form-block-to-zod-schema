@@ -195,7 +195,12 @@ describe("getBlockSchema", () => {
           label: "Enter your email",
           optional: false,
           description: null,
-          allowedDomains: ["explorate.co"],
+          allowedDomains: [
+            {
+              domain: "explorate.co",
+              exact: true,
+            },
+          ],
         },
       };
       const schema = getBlockSchema(block);
@@ -214,7 +219,12 @@ describe("getBlockSchema", () => {
           label: "Enter your email",
           optional: true,
           description: null,
-          allowedDomains: ["explorate.co"],
+          allowedDomains: [
+            {
+              domain: "explorate.co",
+              exact: true,
+            },
+          ],
         },
       };
       const schema = getBlockSchema(block);
@@ -235,8 +245,12 @@ describe("getBlockSchema", () => {
           label: "Enter your website",
           optional: false,
           description: null,
-          allowedDomains: ["explorate.co"],
-          exact: true,
+          allowedDomains: [
+            {
+              domain: "explorate.co",
+              exact: true,
+            },
+          ],
         },
       };
       const schema = getBlockSchema(block);
@@ -256,8 +270,12 @@ describe("getBlockSchema", () => {
           label: "Enter your website",
           optional: true,
           description: null,
-          allowedDomains: ["explorate.co"],
-          exact: true,
+          allowedDomains: [
+            {
+              domain: "explorate.co",
+              exact: true,
+            },
+          ],
         },
       };
       const schema = getBlockSchema(block);

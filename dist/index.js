@@ -93,10 +93,10 @@ function getBlockSchema(block) {
                 schema = schema.refine((value) => {
                     if (emailField.optional && !value)
                         return false;
-                    const domain = value.split("@")[1];
-                    return emailField.allowedDomains.includes(domain);
+                    const hostname = value.split("@")[1];
+                    return emailField.allowedDomains.some(({ domain, exact }) => exact ? hostname === domain : hostname.endsWith(domain));
                 }, {
-                    message: `Domain must be ${formatter.format(emailField.allowedDomains.map((domain) => `"${domain}"`))}`,
+                    message: `Domain must be ${formatter.format(emailField.allowedDomains.map(({ domain }) => `"${domain}"`))}`,
                 });
             }
             if (emailField.optional) {
@@ -118,15 +118,13 @@ function getBlockSchema(block) {
                     }
                     try {
                         const url = new URL(value);
-                        return urlField.allowedDomains.some((domain) => urlField.exact
-                            ? url.hostname === domain
-                            : url.hostname.endsWith(domain));
+                        return urlField.allowedDomains.some(({ domain, exact }) => exact ? url.hostname === domain : url.hostname.endsWith(domain));
                     }
                     catch {
                         return false;
                     }
                 }, {
-                    message: `Domain must be ${formatter.format(urlField.allowedDomains.map((domain) => `"${domain}"`))}`,
+                    message: `Domain must be ${formatter.format(urlField.allowedDomains.map(({ domain }) => `"${domain}"`))}`,
                 });
             }
             if (urlField.optional) {

@@ -90,7 +90,12 @@ export type WorkflowFormBlock = {
         label: string;
         description: string | null;
         optional: boolean;
-        allowedDomains: string[] | null;
+        allowedDomains:
+          | {
+              domain: string;
+              exact: boolean;
+            }[]
+          | null;
       };
     }
   | {
@@ -100,8 +105,12 @@ export type WorkflowFormBlock = {
         label: string;
         description: string | null;
         optional: boolean;
-        allowedDomains: string[] | null;
-        exact: boolean;
+        allowedDomains:
+          | {
+              domain: string;
+              exact: boolean;
+            }[]
+          | null;
       };
     }
   | {
@@ -232,12 +241,14 @@ export default function getBlockSchema(block: WorkflowFormBlock) {
         schema = schema.refine(
           (value) => {
             if (emailField.optional && !value) return false;
-            const domain = value.split("@")[1];
-            return emailField.allowedDomains!.includes(domain);
+            const hostname = value.split("@")[1];
+            return emailField.allowedDomains!.some(({ domain, exact }) =>
+              exact ? hostname === domain : hostname.endsWith(domain)
+            );
           },
           {
             message: `Domain must be ${formatter.format(
-              emailField.allowedDomains.map((domain) => `"${domain}"`)
+              emailField.allowedDomains.map(({ domain }) => `"${domain}"`)
             )}`,
           }
         );
@@ -262,10 +273,8 @@ export default function getBlockSchema(block: WorkflowFormBlock) {
             }
             try {
               const url = new URL(value);
-              return urlField.allowedDomains!.some((domain) =>
-                urlField.exact
-                  ? url.hostname === domain
-                  : url.hostname.endsWith(domain)
+              return urlField.allowedDomains!.some(({ domain, exact }) =>
+                exact ? url.hostname === domain : url.hostname.endsWith(domain)
               );
             } catch {
               return false;
@@ -273,7 +282,7 @@ export default function getBlockSchema(block: WorkflowFormBlock) {
           },
           {
             message: `Domain must be ${formatter.format(
-              urlField.allowedDomains.map((domain) => `"${domain}"`)
+              urlField.allowedDomains.map(({ domain }) => `"${domain}"`)
             )}`,
           }
         );

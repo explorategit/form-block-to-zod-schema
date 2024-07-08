@@ -77,7 +77,10 @@ export type WorkflowFormBlock = {
         label: string;
         description: string | null;
         optional: boolean;
-        allowedDomains: string[] | null;
+        allowedDomains: {
+            domain: string;
+            exact: boolean;
+        }[] | null;
     };
 } | {
     type: WorkflowFormBlockType.UrlField;
@@ -86,8 +89,10 @@ export type WorkflowFormBlock = {
         label: string;
         description: string | null;
         optional: boolean;
-        allowedDomains: string[] | null;
-        exact: boolean;
+        allowedDomains: {
+            domain: string;
+            exact: boolean;
+        }[] | null;
     };
 } | {
     type: WorkflowFormBlockType.PhoneField;
