@@ -20,6 +20,19 @@ export enum WorkflowFormBlockType {
   Paragraph = "paragraph",
 }
 
+export const workflowFormFieldBlockTypes = [
+  WorkflowFormBlockType.CheckboxField,
+  WorkflowFormBlockType.SingleSelectField,
+  WorkflowFormBlockType.TextField,
+  WorkflowFormBlockType.FileField,
+  WorkflowFormBlockType.EmailField,
+  WorkflowFormBlockType.UrlField,
+  WorkflowFormBlockType.PhoneField,
+] as const;
+
+export type WorkflowFormFieldBlockTypes =
+  (typeof workflowFormFieldBlockTypes)[number];
+
 export interface WorkflowFormText {
   content: string;
   url: string | null;
@@ -31,7 +44,7 @@ export interface WorkflowFormText {
 }
 
 export type WorkflowFormBlock = {
-  id: number;
+  key: string;
 } & (
   | {
       type: WorkflowFormBlockType.CheckboxField;
@@ -143,19 +156,6 @@ export type WorkflowFormBlock = {
       [WorkflowFormBlockType.Paragraph]: WorkflowFormText[];
     }
 );
-
-export const workflowFormFieldBlockTypes = [
-  WorkflowFormBlockType.CheckboxField,
-  WorkflowFormBlockType.SingleSelectField,
-  WorkflowFormBlockType.TextField,
-  WorkflowFormBlockType.FileField,
-  WorkflowFormBlockType.EmailField,
-  WorkflowFormBlockType.UrlField,
-  WorkflowFormBlockType.PhoneField,
-] as const;
-
-export type WorkflowFormFieldBlockTypes =
-  (typeof workflowFormFieldBlockTypes)[number];
 
 export type WorkflowFormFieldBlock = Extract<
   WorkflowFormBlock,

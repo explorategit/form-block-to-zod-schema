@@ -4,7 +4,7 @@ describe("getBlockSchema", () => {
   describe(`When block is of type "CheckboxField"`, () => {
     it('should return the schema for a "CheckboxField"', () => {
       const block: WorkflowFormBlock = {
-        id: 0,
+        key: "",
         type: WorkflowFormBlockType.CheckboxField,
         value: false,
         [WorkflowFormBlockType.CheckboxField]: {
@@ -23,7 +23,7 @@ describe("getBlockSchema", () => {
     });
     it('should return an optional schema for a "CheckboxField"', () => {
       const block: WorkflowFormBlock = {
-        id: 0,
+        key: "",
         type: WorkflowFormBlockType.CheckboxField,
         value: false,
         [WorkflowFormBlockType.CheckboxField]: {
@@ -44,7 +44,7 @@ describe("getBlockSchema", () => {
   describe('When block is of type "SingleSelectField"', () => {
     it('should return the schema for a "SingleSelectField"', () => {
       const block: WorkflowFormBlock = {
-        id: 0,
+        key: "",
         type: WorkflowFormBlockType.SingleSelectField,
         value: null,
         [WorkflowFormBlockType.SingleSelectField]: {
@@ -69,7 +69,7 @@ describe("getBlockSchema", () => {
     });
     it('should return an optional schema for a "SingleSelectField"', () => {
       const block: WorkflowFormBlock = {
-        id: 0,
+        key: "",
         type: WorkflowFormBlockType.SingleSelectField,
         value: null,
         [WorkflowFormBlockType.SingleSelectField]: {
@@ -96,7 +96,7 @@ describe("getBlockSchema", () => {
   describe('When block is of type "TextField"', () => {
     it('should return the schema for a "TextField"', () => {
       const block: WorkflowFormBlock = {
-        id: 0,
+        key: "",
         type: WorkflowFormBlockType.TextField,
         value: null,
         [WorkflowFormBlockType.TextField]: {
@@ -119,7 +119,7 @@ describe("getBlockSchema", () => {
     });
     it('should return an optional schema for a "TextField"', () => {
       const block: WorkflowFormBlock = {
-        id: 0,
+        key: "",
         type: WorkflowFormBlockType.TextField,
         value: null,
         [WorkflowFormBlockType.TextField]: {
@@ -144,7 +144,7 @@ describe("getBlockSchema", () => {
   describe('When block is of type "FileField"', () => {
     it('should return the schema for a "FileField"', () => {
       const block: WorkflowFormBlock = {
-        id: 0,
+        key: "",
         type: WorkflowFormBlockType.FileField,
         value: [],
         [WorkflowFormBlockType.FileField]: {
@@ -165,7 +165,7 @@ describe("getBlockSchema", () => {
     });
     it('should return an optional schema for a "FileField"', () => {
       const block: WorkflowFormBlock = {
-        id: 0,
+        key: "",
         type: WorkflowFormBlockType.FileField,
         value: null,
         [WorkflowFormBlockType.FileField]: {
@@ -188,7 +188,7 @@ describe("getBlockSchema", () => {
   describe('When block is of type "EmailField"', () => {
     it('should return the schema for an "EmailField"', () => {
       const block: WorkflowFormBlock = {
-        id: 0,
+        key: "",
         type: WorkflowFormBlockType.EmailField,
         value: null,
         [WorkflowFormBlockType.EmailField]: {
@@ -212,7 +212,7 @@ describe("getBlockSchema", () => {
     });
     it('should return an optional schema for an "EmailField"', () => {
       const block: WorkflowFormBlock = {
-        id: 0,
+        key: "",
         type: WorkflowFormBlockType.EmailField,
         value: null,
         [WorkflowFormBlockType.EmailField]: {
@@ -238,8 +238,8 @@ describe("getBlockSchema", () => {
   describe('When block is of type "UrlField"', () => {
     it('should return the schema for a "UrlField"', () => {
       const block: WorkflowFormBlock = {
-        id: 0,
         type: WorkflowFormBlockType.UrlField,
+        key: "",
         value: null,
         [WorkflowFormBlockType.UrlField]: {
           label: "Enter your website",
@@ -263,7 +263,7 @@ describe("getBlockSchema", () => {
     });
     it('should return an optional schema for a "UrlField"', () => {
       const block: WorkflowFormBlock = {
-        id: 0,
+        key: "",
         type: WorkflowFormBlockType.UrlField,
         value: null,
         [WorkflowFormBlockType.UrlField]: {
@@ -290,7 +290,7 @@ describe("getBlockSchema", () => {
   describe('When block is of type "PhoneField"', () => {
     it('should return the schema for a "PhoneField"', () => {
       const block: WorkflowFormBlock = {
-        id: 0,
+        key: "",
         type: WorkflowFormBlockType.PhoneField,
         value: null,
         [WorkflowFormBlockType.PhoneField]: {
@@ -309,7 +309,7 @@ describe("getBlockSchema", () => {
     });
     it('should return an optional schema for a "PhoneField"', () => {
       const block: WorkflowFormBlock = {
-        id: 0,
+        key: "",
         type: WorkflowFormBlockType.PhoneField,
         value: null,
         [WorkflowFormBlockType.PhoneField]: {
@@ -330,7 +330,7 @@ describe("getBlockSchema", () => {
   describe("When block is of an unknown type", () => {
     it("should return null", () => {
       const block: WorkflowFormBlock = {
-        id: 0,
+        key: "",
         type: "UnknownType" as never,
         value: null,
       };
