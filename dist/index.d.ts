@@ -123,4 +123,4 @@ export type WorkflowFormBlock = {
 export type WorkflowFormFieldBlock = Extract<WorkflowFormBlock, {
     type: WorkflowFormFieldBlockTypes;
 }>;
-export default function getBlockSchema(block: WorkflowFormBlock): zod.ZodType<any, zod.ZodTypeDef, any> | null;
+export default function getBlockSchema(block: WorkflowFormBlock, allowNullish?: boolean): zod.ZodType<any, zod.ZodTypeDef, any> | null;

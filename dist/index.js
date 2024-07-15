@@ -31,12 +31,12 @@ exports.workflowFormFieldBlockTypes = [
     WorkflowFormBlockType.UrlField,
     WorkflowFormBlockType.PhoneField,
 ];
-function getBlockSchema(block) {
+function getBlockSchema(block, allowNullish = false) {
     switch (block.type) {
         case WorkflowFormBlockType.FileField: {
             const fileField = block[WorkflowFormBlockType.FileField];
             let schema = zod_1.default.array(zod_1.default.string());
-            if (!fileField.optional) {
+            if (!allowNullish && !fileField.optional) {
                 schema = schema.min(1, "At least one file is required");
             }
             if (!fileField.multiple) {
@@ -52,7 +52,7 @@ function getBlockSchema(block) {
                     message: "This field is required",
                 });
             }
-            if (checkboxField.optional) {
+            if (allowNullish || checkboxField.optional) {
                 schema = schema.optional();
             }
             return schema;
@@ -66,10 +66,11 @@ function getBlockSchema(block) {
             });
             let schema = zod_1.default
                 .string()
-                .refine((value) => (singleSelectField.optional && !value) || values.includes(value), {
+                .refine((value) => ((allowNullish || singleSelectField.optional) && !value) ||
+                values.includes(value), {
                 message: `Must be one of ${formatter.format(values.map((value) => `\`${value}\``))}.`,
             });
-            if (singleSelectField.optional) {
+            if (allowNullish || singleSelectField.optional) {
                 schema = schema.optional();
             }
             return schema;
@@ -86,8 +87,8 @@ function getBlockSchema(block) {
             if (textField.minLength) {
                 schema = schema.min(textField.minLength);
             }
-            else if (!textField.optional) {
-                schema = schema.min(1);
+            if (allowNullish || textField.optional) {
+                schema = schema.optional();
             }
             return schema;
         }
@@ -122,7 +123,7 @@ function getBlockSchema(block) {
                     type: "disjunction",
                 });
                 schema = schema.refine((value) => {
-                    if (urlField.optional && !value) {
+                    if ((allowNullish || urlField.optional) && !value) {
                         return false;
                     }
                     try {
@@ -136,7 +137,7 @@ function getBlockSchema(block) {
                     message: `Domain must be ${formatter.format(urlField.allowedDomains.map(({ domain }) => `"${domain}"`))}`,
                 });
             }
-            if (urlField.optional) {
+            if (allowNullish || urlField.optional) {
                 schema = schema.optional();
             }
             return schema;
@@ -145,7 +146,7 @@ function getBlockSchema(block) {
             const phoneField = block[WorkflowFormBlockType.PhoneField];
             let schema = zod_1.default.string().superRefine((val, ctx) => {
                 try {
-                    if (phoneField.optional && !val)
+                    if ((allowNullish || phoneField.optional) && !val)
                         return zod_1.default.NEVER;
                     let defaultCountry = undefined;
                     if (typeof navigator !== "undefined") {
@@ -179,7 +180,7 @@ function getBlockSchema(block) {
                     return zod_1.default.NEVER;
                 }
             });
-            if (phoneField.optional) {
+            if (allowNullish || phoneField.optional) {
                 schema = schema.optional();
             }
             return schema;

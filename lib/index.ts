@@ -162,12 +162,15 @@ export type WorkflowFormFieldBlock = Extract<
   { type: WorkflowFormFieldBlockTypes }
 >;
 
-export default function getBlockSchema(block: WorkflowFormBlock) {
+export default function getBlockSchema(
+  block: WorkflowFormBlock,
+  allowNullish: boolean = false
+) {
   switch (block.type) {
     case WorkflowFormBlockType.FileField: {
       const fileField = block[WorkflowFormBlockType.FileField];
       let schema = zod.array(zod.string());
-      if (!fileField.optional) {
+      if (!allowNullish && !fileField.optional) {
         schema = schema.min(1, "At least one file is required");
       }
       if (!fileField.multiple) {
@@ -183,7 +186,7 @@ export default function getBlockSchema(block: WorkflowFormBlock) {
           message: "This field is required",
         });
       }
-      if (checkboxField.optional) {
+      if (allowNullish || checkboxField.optional) {
         schema = schema.optional();
       }
       return schema;
@@ -201,21 +204,22 @@ export default function getBlockSchema(block: WorkflowFormBlock) {
         .string()
         .refine(
           (value) =>
-            (singleSelectField.optional && !value) || values.includes(value),
+            ((allowNullish || singleSelectField.optional) && !value) ||
+            values.includes(value),
           {
             message: `Must be one of ${formatter.format(
               values.map((value) => `\`${value}\``)
             )}.`,
           }
         );
-      if (singleSelectField.optional) {
+      if (allowNullish || singleSelectField.optional) {
         schema = schema.optional();
       }
       return schema;
     }
     case WorkflowFormBlockType.TextField: {
       const textField = block[WorkflowFormBlockType.TextField];
-      let schema: zod.ZodString = zod.string();
+      let schema: zod.ZodString | zod.ZodOptional<zod.ZodString> = zod.string();
       if (textField.pattern) {
         schema = schema.regex(
           new RegExp(textField.pattern.value),
@@ -227,8 +231,9 @@ export default function getBlockSchema(block: WorkflowFormBlock) {
       }
       if (textField.minLength) {
         schema = schema.min(textField.minLength);
-      } else if (!textField.optional) {
-        schema = schema.min(1);
+      }
+      if (allowNullish || textField.optional) {
+        schema = schema.optional();
       }
       return schema;
     }
@@ -270,7 +275,7 @@ export default function getBlockSchema(block: WorkflowFormBlock) {
         });
         schema = schema.refine(
           (value) => {
-            if (urlField.optional && !value) {
+            if ((allowNullish || urlField.optional) && !value) {
               return false;
             }
             try {
@@ -289,7 +294,7 @@ export default function getBlockSchema(block: WorkflowFormBlock) {
           }
         );
       }
-      if (urlField.optional) {
+      if (allowNullish || urlField.optional) {
         schema = schema.optional();
       }
       return schema;
@@ -298,7 +303,7 @@ export default function getBlockSchema(block: WorkflowFormBlock) {
       const phoneField = block[WorkflowFormBlockType.PhoneField];
       let schema: zod.ZodSchema = zod.string().superRefine((val, ctx) => {
         try {
-          if (phoneField.optional && !val) return zod.NEVER;
+          if ((allowNullish || phoneField.optional) && !val) return zod.NEVER;
 
           let defaultCountry: undefined | CountryCode = undefined;
 
@@ -345,7 +350,7 @@ export default function getBlockSchema(block: WorkflowFormBlock) {
           return zod.NEVER;
         }
       });
-      if (phoneField.optional) {
+      if (allowNullish || phoneField.optional) {
         schema = schema.optional();
       }
       return schema;
