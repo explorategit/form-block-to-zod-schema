@@ -123,4 +123,12 @@ export type WorkflowFormBlock = {
 export type WorkflowFormFieldBlock = Extract<WorkflowFormBlock, {
     type: WorkflowFormFieldBlockTypes;
 }>;
+/**
+ *
+ * @param block - The block to get the schema for
+ * @param allowNullish - Whether to allow nullish values.
+ * If true, the schema will be optional regardless of the block's configuration.
+ * If false, the schema will be only be optional if the block is optional.
+ * @returns
+ */
 export default function getBlockSchema(block: WorkflowFormBlock, allowNullish?: boolean): zod.ZodType<any, zod.ZodTypeDef, any> | null;
