@@ -32,11 +32,9 @@ exports.workflowFormFieldBlockTypes = [
     WorkflowFormBlockType.PhoneField,
 ];
 /**
- *
+ * Get the zod schema for a block
  * @param block - The block to get the schema for
- * @param allowNullish - Whether to allow nullish values.
- * If true, the schema will be optional regardless of the block's configuration.
- * If false, the schema will be only be optional if the block is optional.
+ * @param allowNullish - Whether to allow nullish values. If true, the schema will be optional regardless of the block's configuration. If false, the schema will be only be optional if the block is optional.
  * @returns
  */
 function getBlockSchema(block, allowNullish = false) {
