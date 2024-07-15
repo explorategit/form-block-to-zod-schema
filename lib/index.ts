@@ -253,7 +253,7 @@ export default function getBlockSchema(
         });
         schema = schema.refine(
           (value) => {
-            if (emailField.optional && !value) return false;
+            if ((allowNullish || emailField.optional) && !value) return false;
             const hostname = value.split("@")[1];
             return emailField.allowedDomains!.some(({ domain, exact }) =>
               exact ? hostname === domain : hostname?.endsWith(domain)
@@ -266,7 +266,7 @@ export default function getBlockSchema(
           }
         );
       }
-      if (emailField.optional) {
+      if (allowNullish || emailField.optional) {
         schema = schema.optional();
       }
       return schema;

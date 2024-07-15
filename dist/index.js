@@ -107,7 +107,7 @@ function getBlockSchema(block, allowNullish = false) {
                     type: "disjunction",
                 });
                 schema = schema.refine((value) => {
-                    if (emailField.optional && !value)
+                    if ((allowNullish || emailField.optional) && !value)
                         return false;
                     const hostname = value.split("@")[1];
                     return emailField.allowedDomains.some(({ domain, exact }) => exact ? hostname === domain : hostname?.endsWith(domain));
@@ -115,7 +115,7 @@ function getBlockSchema(block, allowNullish = false) {
                     message: `Domain must be ${formatter.format(emailField.allowedDomains.map(({ domain }) => `"${domain}"`))}`,
                 });
             }
-            if (emailField.optional) {
+            if (allowNullish || emailField.optional) {
                 schema = schema.optional();
             }
             return schema;
