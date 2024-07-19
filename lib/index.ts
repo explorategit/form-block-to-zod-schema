@@ -1,5 +1,6 @@
 import {
   getCountryCallingCode,
+  isSupportedCountry,
   parsePhoneNumber,
   type CountryCode,
 } from "libphonenumber-js";
@@ -53,7 +54,6 @@ export type WorkflowFormBlock = {
         label: string;
         description: string | null;
         optional: boolean;
-        required: boolean;
       };
     }
   | {
@@ -162,6 +162,13 @@ export type WorkflowFormFieldBlock = Extract<
   { type: WorkflowFormFieldBlockTypes }
 >;
 
+function getOptionalStringSchema(schema: zod.ZodSchema<string>) {
+  return zod
+    .union([zod.literal(""), schema])
+    .optional()
+    .transform((val) => (val?.trim() === "" ? undefined : val));
+}
+
 /**
  * Get the zod schema for a block
  * @param block - The block to get the schema for
@@ -171,29 +178,33 @@ export type WorkflowFormFieldBlock = Extract<
 export default function getBlockSchema(
   block: WorkflowFormBlock,
   allowNullish: boolean = false
-) {
+): zod.ZodSchema | null {
   switch (block.type) {
     case WorkflowFormBlockType.FileField: {
       const fileField = block[WorkflowFormBlockType.FileField];
-      let schema = zod.array(zod.string());
-      if (!allowNullish && !fileField.optional) {
-        schema = schema.min(1, "At least one file is required");
-      }
+      let schema = zod.array(
+        zod.object({
+          size: zod
+            .number()
+            .max(fileField.maxSize ?? Infinity, "File is too large"),
+          type: zod.string(),
+        })
+      );
       if (!fileField.multiple) {
         schema = schema.max(1, "Only one file is allowed");
       }
-      return schema;
+
+      if (allowNullish || fileField.optional) {
+        return schema.optional();
+      }
+
+      return schema.min(1, "At least one file is required");
     }
     case WorkflowFormBlockType.CheckboxField: {
       const checkboxField = block[WorkflowFormBlockType.CheckboxField];
-      let schema: zod.ZodSchema = zod.boolean();
-      if (checkboxField.required) {
-        schema = schema.refine((bool) => bool === true, {
-          message: "This field is required",
-        });
-      }
+      let schema = zod.boolean();
       if (allowNullish || checkboxField.optional) {
-        schema = schema.optional();
+        return schema.optional();
       }
       return schema;
     }
@@ -206,46 +217,39 @@ export default function getBlockSchema(
         style: "long",
         type: "disjunction",
       });
-      let schema: zod.ZodSchema = zod
-        .string()
-        .refine(
-          (value) =>
-            ((allowNullish || singleSelectField.optional) && !value) ||
-            values.includes(value),
-          {
-            message: `Must be one of ${formatter.format(
-              values.map((value) => `\`${value}\``)
-            )}.`,
-          }
-        );
+      let schema = zod.string().refine((value) => values.includes(value), {
+        message: `Must be one of ${formatter.format(
+          values.map((value) => `\`${value}\``)
+        )}.`,
+      });
       if (allowNullish || singleSelectField.optional) {
-        schema = schema.optional();
+        return schema.nullish();
       }
       return schema;
     }
     case WorkflowFormBlockType.TextField: {
       const textField = block[WorkflowFormBlockType.TextField];
-      let schema: zod.ZodString | zod.ZodOptional<zod.ZodString> = zod.string();
+      let schema = zod.string();
       if (textField.pattern) {
         schema = schema.regex(
           new RegExp(textField.pattern.value),
           textField.pattern.message
         );
       }
-      if (textField.maxLength) {
-        schema = schema.max(textField.maxLength);
-      }
       if (textField.minLength) {
         schema = schema.min(textField.minLength);
       }
+      if (textField.maxLength) {
+        schema = schema.max(textField.maxLength);
+      }
       if (allowNullish || textField.optional) {
-        schema = schema.optional();
+        return getOptionalStringSchema(schema);
       }
       return schema;
     }
     case WorkflowFormBlockType.EmailField: {
       const emailField = block[WorkflowFormBlockType.EmailField];
-      let schema: zod.ZodSchema = zod.string().email();
+      let schema: zod.ZodSchema<string> = zod.string().email();
       if (emailField.allowedDomains) {
         const formatter = new Intl.ListFormat("en-AU", {
           style: "long",
@@ -253,7 +257,6 @@ export default function getBlockSchema(
         });
         schema = schema.refine(
           (value) => {
-            if ((allowNullish || emailField.optional) && !value) return false;
             const hostname = value.split("@")[1];
             return emailField.allowedDomains!.some(({ domain, exact }) =>
               exact ? hostname === domain : hostname?.endsWith(domain)
@@ -267,13 +270,13 @@ export default function getBlockSchema(
         );
       }
       if (allowNullish || emailField.optional) {
-        schema = schema.optional();
+        return getOptionalStringSchema(schema);
       }
       return schema;
     }
     case WorkflowFormBlockType.UrlField: {
       const urlField = block[WorkflowFormBlockType.UrlField];
-      let schema: zod.ZodSchema = zod.string().url();
+      let schema: zod.ZodSchema<string> = zod.string().url();
       if (urlField.allowedDomains) {
         const formatter = new Intl.ListFormat("en-AU", {
           style: "long",
@@ -301,63 +304,74 @@ export default function getBlockSchema(
         );
       }
       if (allowNullish || urlField.optional) {
-        schema = schema.optional();
+        return getOptionalStringSchema(schema);
       }
       return schema;
     }
     case WorkflowFormBlockType.PhoneField: {
       const phoneField = block[WorkflowFormBlockType.PhoneField];
-      let schema: zod.ZodSchema = zod.string().superRefine((val, ctx) => {
-        try {
-          if ((allowNullish || phoneField.optional) && !val) return zod.NEVER;
+      const schema = zod
+        .string()
+        .superRefine((val, ctx) => {
+          try {
+            let defaultCountry: undefined | string = undefined;
 
-          let defaultCountry: undefined | CountryCode = undefined;
-
-          if (typeof navigator !== "undefined") {
-            defaultCountry = navigator.language.split("-")[1] as CountryCode;
-          }
-
-          const phoneNumber = parsePhoneNumber(val, {
-            defaultCountry,
-          });
-
-          if (phoneField.allowedCountries) {
-            const formatter = new Intl.ListFormat("en-AU", {
-              style: "long",
-              type: "disjunction",
-            });
-            if (
-              (!phoneNumber.country && !defaultCountry) ||
-              !phoneField.allowedCountries.includes(
-                (phoneNumber.country ?? defaultCountry)!
-              )
-            ) {
-              ctx.addIssue({
-                code: zod.ZodIssueCode.custom,
-                message: `Phone number must be from ${formatter.format(
-                  phoneField.allowedCountries.map(
-                    (countryCode) =>
-                      `${countryCode} (+${getCountryCallingCode(
-                        countryCode as CountryCode
-                      )})`
-                  )
-                )}`,
-                fatal: true,
-              });
+            if (typeof navigator !== "undefined") {
+              defaultCountry = navigator.language.split("-")[1] as string;
             }
+
+            if (
+              defaultCountry !== undefined &&
+              !isSupportedCountry(defaultCountry)
+            ) {
+              defaultCountry = undefined;
+            }
+
+            const phoneNumber = parsePhoneNumber(val, {
+              defaultCountry,
+            });
+
+            if (phoneField.allowedCountries) {
+              const formatter = new Intl.ListFormat("en-AU", {
+                style: "long",
+                type: "disjunction",
+              });
+              if (
+                (!phoneNumber.country && !defaultCountry) ||
+                !phoneField.allowedCountries.includes(
+                  (phoneNumber.country ?? defaultCountry)!
+                )
+              ) {
+                ctx.addIssue({
+                  code: zod.ZodIssueCode.custom,
+                  message: `Phone number must be from ${formatter.format(
+                    phoneField.allowedCountries.map(
+                      (countryCode) =>
+                        `${countryCode} (+${getCountryCallingCode(
+                          countryCode as CountryCode
+                        )})`
+                    )
+                  )}`,
+                  fatal: true,
+                });
+              }
+            }
+            return zod.NEVER;
+          } catch (e) {
+            ctx.addIssue({
+              code: zod.ZodIssueCode.custom,
+              message: "Invalid phone number",
+              fatal: true,
+            });
+            return zod.NEVER;
           }
-          return zod.NEVER;
-        } catch (e) {
-          ctx.addIssue({
-            code: zod.ZodIssueCode.custom,
-            message: "Invalid phone number",
-            fatal: true,
-          });
-          return zod.NEVER;
-        }
-      });
+        })
+        .transform((val) => {
+          const phoneNumber = parsePhoneNumber(val);
+          return phoneNumber.format("E.164");
+        });
       if (allowNullish || phoneField.optional) {
-        schema = schema.optional();
+        return getOptionalStringSchema(schema);
       }
       return schema;
     }

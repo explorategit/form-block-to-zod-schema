@@ -31,6 +31,12 @@ exports.workflowFormFieldBlockTypes = [
     WorkflowFormBlockType.UrlField,
     WorkflowFormBlockType.PhoneField,
 ];
+function getOptionalStringSchema(schema) {
+    return zod_1.default
+        .union([zod_1.default.literal(""), schema])
+        .optional()
+        .transform((val) => (val?.trim() === "" ? undefined : val));
+}
 /**
  * Get the zod schema for a block
  * @param block - The block to get the schema for
@@ -41,25 +47,25 @@ function getBlockSchema(block, allowNullish = false) {
     switch (block.type) {
         case WorkflowFormBlockType.FileField: {
             const fileField = block[WorkflowFormBlockType.FileField];
-            let schema = zod_1.default.array(zod_1.default.string());
-            if (!allowNullish && !fileField.optional) {
-                schema = schema.min(1, "At least one file is required");
-            }
+            let schema = zod_1.default.array(zod_1.default.object({
+                size: zod_1.default
+                    .number()
+                    .max(fileField.maxSize ?? Infinity, "File is too large"),
+                type: zod_1.default.string(),
+            }));
             if (!fileField.multiple) {
                 schema = schema.max(1, "Only one file is allowed");
             }
-            return schema;
+            if (allowNullish || fileField.optional) {
+                return schema.optional();
+            }
+            return schema.min(1, "At least one file is required");
         }
         case WorkflowFormBlockType.CheckboxField: {
             const checkboxField = block[WorkflowFormBlockType.CheckboxField];
             let schema = zod_1.default.boolean();
-            if (checkboxField.required) {
-                schema = schema.refine((bool) => bool === true, {
-                    message: "This field is required",
-                });
-            }
             if (allowNullish || checkboxField.optional) {
-                schema = schema.optional();
+                return schema.optional();
             }
             return schema;
         }
@@ -70,14 +76,11 @@ function getBlockSchema(block, allowNullish = false) {
                 style: "long",
                 type: "disjunction",
             });
-            let schema = zod_1.default
-                .string()
-                .refine((value) => ((allowNullish || singleSelectField.optional) && !value) ||
-                values.includes(value), {
+            let schema = zod_1.default.string().refine((value) => values.includes(value), {
                 message: `Must be one of ${formatter.format(values.map((value) => `\`${value}\``))}.`,
             });
             if (allowNullish || singleSelectField.optional) {
-                schema = schema.optional();
+                return schema.nullish();
             }
             return schema;
         }
@@ -87,14 +90,14 @@ function getBlockSchema(block, allowNullish = false) {
             if (textField.pattern) {
                 schema = schema.regex(new RegExp(textField.pattern.value), textField.pattern.message);
             }
-            if (textField.maxLength) {
-                schema = schema.max(textField.maxLength);
-            }
             if (textField.minLength) {
                 schema = schema.min(textField.minLength);
             }
+            if (textField.maxLength) {
+                schema = schema.max(textField.maxLength);
+            }
             if (allowNullish || textField.optional) {
-                schema = schema.optional();
+                return getOptionalStringSchema(schema);
             }
             return schema;
         }
@@ -107,8 +110,6 @@ function getBlockSchema(block, allowNullish = false) {
                     type: "disjunction",
                 });
                 schema = schema.refine((value) => {
-                    if ((allowNullish || emailField.optional) && !value)
-                        return false;
                     const hostname = value.split("@")[1];
                     return emailField.allowedDomains.some(({ domain, exact }) => exact ? hostname === domain : hostname?.endsWith(domain));
                 }, {
@@ -116,7 +117,7 @@ function getBlockSchema(block, allowNullish = false) {
                 });
             }
             if (allowNullish || emailField.optional) {
-                schema = schema.optional();
+                return getOptionalStringSchema(schema);
             }
             return schema;
         }
@@ -144,19 +145,23 @@ function getBlockSchema(block, allowNullish = false) {
                 });
             }
             if (allowNullish || urlField.optional) {
-                schema = schema.optional();
+                return getOptionalStringSchema(schema);
             }
             return schema;
         }
         case WorkflowFormBlockType.PhoneField: {
             const phoneField = block[WorkflowFormBlockType.PhoneField];
-            let schema = zod_1.default.string().superRefine((val, ctx) => {
+            const schema = zod_1.default
+                .string()
+                .superRefine((val, ctx) => {
                 try {
-                    if ((allowNullish || phoneField.optional) && !val)
-                        return zod_1.default.NEVER;
                     let defaultCountry = undefined;
                     if (typeof navigator !== "undefined") {
                         defaultCountry = navigator.language.split("-")[1];
+                    }
+                    if (defaultCountry !== undefined &&
+                        !(0, libphonenumber_js_1.isSupportedCountry)(defaultCountry)) {
+                        defaultCountry = undefined;
                     }
                     const phoneNumber = (0, libphonenumber_js_1.parsePhoneNumber)(val, {
                         defaultCountry,
@@ -185,9 +190,13 @@ function getBlockSchema(block, allowNullish = false) {
                     });
                     return zod_1.default.NEVER;
                 }
+            })
+                .transform((val) => {
+                const phoneNumber = (0, libphonenumber_js_1.parsePhoneNumber)(val);
+                return phoneNumber.format("E.164");
             });
             if (allowNullish || phoneField.optional) {
-                schema = schema.optional();
+                return getOptionalStringSchema(schema);
             }
             return schema;
         }

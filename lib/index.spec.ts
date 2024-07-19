@@ -11,14 +11,13 @@ describe("getBlockSchema", () => {
           label: "I agree to the terms and conditions",
           optional: false,
           description: null,
-          required: true,
         },
       };
       const schema = getBlockSchema(block);
 
       expect(schema).toBeDefined();
       expect(() => schema!.parse(true)).not.toThrow();
-      expect(() => schema!.parse(false)).toThrow();
+      expect(() => schema!.parse(false)).not.toThrow();
       expect(() => schema!.parse(undefined)).toThrow();
     });
     it('should return an optional schema for a "CheckboxField"', () => {
@@ -30,14 +29,13 @@ describe("getBlockSchema", () => {
           label: "I agree to the terms and conditions",
           optional: true,
           description: null,
-          required: true,
         },
       };
       const schema = getBlockSchema(block);
 
       expect(schema).toBeDefined();
       expect(() => schema!.parse(true)).not.toThrow();
-      expect(() => schema!.parse(false)).toThrow();
+      expect(() => schema!.parse(false)).not.toThrow();
       expect(() => schema!.parse(undefined)).not.toThrow();
     });
   });
@@ -159,9 +157,28 @@ describe("getBlockSchema", () => {
       const schema = getBlockSchema(block);
 
       expect(schema).toBeDefined();
-      expect(() => schema?.parse(["resume.pdf"])).not.toThrow();
-      expect(() => schema?.parse(["resume.pdf", "resume.doc"])).toThrow();
+      expect(() =>
+        schema?.parse([
+          {
+            type: "application/pdf",
+            size: 1024,
+          },
+        ])
+      ).not.toThrow();
+      expect(() =>
+        schema?.parse([
+          {
+            type: "application/pdf",
+            size: 1025,
+          },
+          {
+            type: "application/msword",
+            size: 1024,
+          },
+        ])
+      ).toThrow();
       expect(() => schema?.parse([])).toThrow();
+      expect(() => schema?.parse(undefined)).toThrow();
     });
     it('should return an optional schema for a "FileField"', () => {
       const block: WorkflowFormBlock = {
@@ -180,8 +197,26 @@ describe("getBlockSchema", () => {
       const schema = getBlockSchema(block);
 
       expect(schema).toBeDefined();
-      expect(() => schema?.parse(["resume.pdf"])).not.toThrow();
-      expect(() => schema?.parse(["resume.pdf", "resume.doc"])).toThrow();
+      expect(() =>
+        schema?.parse([
+          {
+            type: "application/pdf",
+            size: 1024,
+          },
+        ])
+      ).not.toThrow();
+      expect(() =>
+        schema?.parse([
+          {
+            type: "application/pdf",
+            size: 1025,
+          },
+          {
+            type: "application/msword",
+            size: 1024,
+          },
+        ])
+      ).toThrow();
       expect(() => schema?.parse([])).not.toThrow();
     });
   });
@@ -233,6 +268,34 @@ describe("getBlockSchema", () => {
       expect(() => schema?.parse("mark@explorate.co").not.toThrow());
       expect(() => schema?.parse("mark@gmail.com")).toThrow();
       expect(() => schema?.parse(undefined)).not.toThrow();
+    });
+    it('should return the schema for an "EmailField" with multiple allowed domains', () => {
+      const block: WorkflowFormBlock = {
+        key: "",
+        type: WorkflowFormBlockType.EmailField,
+        value: null,
+        [WorkflowFormBlockType.EmailField]: {
+          label: "Enter your email",
+          optional: false,
+          description: null,
+          allowedDomains: [
+            {
+              domain: "explorate.co",
+              exact: true,
+            },
+            {
+              domain: "gmail.com",
+              exact: true,
+            },
+          ],
+        },
+      };
+      const schema = getBlockSchema(block);
+
+      expect(schema).toBeDefined();
+      expect(() => schema?.parse("mark@explorate.co")).not.toThrow();
+      expect(() => schema?.parse("mark@gmail.com")).not.toThrow();
+      expect(() => schema?.parse("mark@outlook.com")).toThrow();
     });
   });
   describe('When block is of type "UrlField"', () => {
@@ -286,6 +349,35 @@ describe("getBlockSchema", () => {
       expect(() => schema?.parse("https://google.com")).toThrow();
       expect(() => schema?.parse(undefined)).not.toThrow();
     });
+    it('should return the schema for a "UrlField" with multiple allowed domains', () => {
+      const block: WorkflowFormBlock = {
+        key: "",
+        type: WorkflowFormBlockType.UrlField,
+        value: null,
+        [WorkflowFormBlockType.UrlField]: {
+          label: "Enter your website",
+          optional: false,
+          description: null,
+          allowedDomains: [
+            {
+              domain: "explorate.co",
+              exact: true,
+            },
+            {
+              domain: "google.com",
+              exact: true,
+            },
+          ],
+        },
+      };
+      const schema = getBlockSchema(block);
+
+      expect(schema).toBeDefined();
+      expect(() => schema?.parse("https://explorate.co")).not.toThrow();
+      expect(() => schema?.parse("https://google.com")).not.toThrow();
+      expect(() => schema?.parse("https://subdomain.explorate.co")).toThrow();
+      expect(() => schema?.parse("https://subdomain.google.com")).toThrow();
+    });
   });
   describe('When block is of type "PhoneField"', () => {
     it('should return the schema for a "PhoneField"', () => {
@@ -325,6 +417,26 @@ describe("getBlockSchema", () => {
       expect(() => schema?.parse("+61404001111")).not.toThrow();
       expect(() => schema?.parse("+442071838750")).toThrow();
       expect(() => schema?.parse(undefined)).not.toThrow();
+    });
+    it('should return the schema for a "PhoneField" with multiple allowed countries', () => {
+      const block: WorkflowFormBlock = {
+        key: "",
+        type: WorkflowFormBlockType.PhoneField,
+        value: null,
+        [WorkflowFormBlockType.PhoneField]: {
+          label: "Enter your phone number",
+          optional: false,
+          description: null,
+          allowedCountries: ["AU", "GB"],
+        },
+      };
+      const schema = getBlockSchema(block);
+
+      expect(schema).toBeDefined();
+      expect(() => schema?.parse("+61404001111")).not.toThrow();
+      expect(() => schema?.parse("+442071838750")).not.toThrow();
+      expect(() => schema?.parse("+12025550123")).toThrow();
+      expect(() => schema?.parse(undefined)).toThrow();
     });
   });
   describe("When block is of an unknown type", () => {
