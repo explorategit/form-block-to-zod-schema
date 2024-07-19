@@ -137,6 +137,7 @@ describe("getBlockSchema", () => {
       expect(() => schema?.parse("J")).not.toThrow();
       expect(() => schema?.parse("Jonathan Doe")).toThrow();
       expect(() => schema?.parse("")).not.toThrow();
+      expect(schema?.parse("")).toBe(undefined);
     });
   });
   describe('When block is of type "FileField"', () => {
@@ -268,6 +269,7 @@ describe("getBlockSchema", () => {
       expect(() => schema?.parse("mark@explorate.co").not.toThrow());
       expect(() => schema?.parse("mark@gmail.com")).toThrow();
       expect(() => schema?.parse(undefined)).not.toThrow();
+      expect(schema?.parse("")).toBe(undefined);
     });
     it('should return the schema for an "EmailField" with multiple allowed domains', () => {
       const block: WorkflowFormBlock = {
@@ -348,6 +350,7 @@ describe("getBlockSchema", () => {
       expect(() => schema?.parse("https://subdomain.explorate.co")).toThrow();
       expect(() => schema?.parse("https://google.com")).toThrow();
       expect(() => schema?.parse(undefined)).not.toThrow();
+      expect(schema?.parse("")).toBe(undefined);
     });
     it('should return the schema for a "UrlField" with multiple allowed domains', () => {
       const block: WorkflowFormBlock = {
@@ -417,6 +420,7 @@ describe("getBlockSchema", () => {
       expect(() => schema?.parse("+61404001111")).not.toThrow();
       expect(() => schema?.parse("+442071838750")).toThrow();
       expect(() => schema?.parse(undefined)).not.toThrow();
+      expect(schema?.parse("")).toBe(undefined);
     });
     it('should return the schema for a "PhoneField" with multiple allowed countries', () => {
       const block: WorkflowFormBlock = {
