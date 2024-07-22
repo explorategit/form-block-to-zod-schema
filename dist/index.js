@@ -47,12 +47,7 @@ function getBlockSchema(block, allowNullish = false) {
     switch (block.type) {
         case WorkflowFormBlockType.FileField: {
             const fileField = block[WorkflowFormBlockType.FileField];
-            let schema = zod_1.default.array(zod_1.default.object({
-                size: zod_1.default
-                    .number()
-                    .max(fileField.maxSize ?? Infinity, "File is too large"),
-                type: zod_1.default.string(),
-            }));
+            let schema = zod_1.default.array(zod_1.default.any());
             if (!fileField.multiple) {
                 schema = schema.max(1, "Only one file is allowed");
             }
