@@ -212,7 +212,7 @@ export default function getBlockSchema(
       });
       let schema = zod.string().refine((value) => values.includes(value), {
         message: `Must be one of ${formatter.format(
-          values.map((value) => `\`${value}\``)
+          singleSelectField.options.map(({ label }) => `\`${label}\``)
         )}.`,
       });
       if (allowNullish || singleSelectField.optional) {

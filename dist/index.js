@@ -72,7 +72,7 @@ function getBlockSchema(block, allowNullish = false) {
                 type: "disjunction",
             });
             let schema = zod_1.default.string().refine((value) => values.includes(value), {
-                message: `Must be one of ${formatter.format(values.map((value) => `\`${value}\``))}.`,
+                message: `Must be one of ${formatter.format(singleSelectField.options.map(({ label }) => `\`${label}\``))}.`,
             });
             if (allowNullish || singleSelectField.optional) {
                 return schema.nullish();
