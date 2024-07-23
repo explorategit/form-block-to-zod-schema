@@ -15,6 +15,13 @@ export declare enum WorkflowFormBlockType {
 }
 export declare const workflowFormFieldBlockTypes: readonly [WorkflowFormBlockType.CheckboxField, WorkflowFormBlockType.SingleSelectField, WorkflowFormBlockType.TextField, WorkflowFormBlockType.FileField, WorkflowFormBlockType.EmailField, WorkflowFormBlockType.UrlField, WorkflowFormBlockType.PhoneField];
 export type WorkflowFormFieldBlockTypes = (typeof workflowFormFieldBlockTypes)[number];
+export interface WorkflowFormFile {
+    type: string;
+    name: string;
+    key: string;
+    size: number;
+    uploadedAt: string;
+}
 export interface WorkflowFormText {
     content: string;
     url: string | null;
@@ -24,86 +31,93 @@ export interface WorkflowFormText {
         attribute: string;
     } | null;
 }
+export interface CheckboxFieldConfig {
+    label: string;
+    description: string | null;
+    optional: boolean;
+}
+export interface SingleSelectFieldConfig {
+    options: {
+        label: string;
+        value: string;
+    }[];
+    label: string;
+    description: string | null;
+    optional: boolean;
+}
+export interface TextFieldConfig {
+    minLength: number | null;
+    maxLength: number | null;
+    pattern: {
+        value: string;
+        message: string;
+    } | null;
+    label: string;
+    description: string | null;
+    optional: boolean;
+}
+export interface FileFieldConfig {
+    maxSize: number | null;
+    allowedTypes: string[] | null;
+    multiple: boolean;
+    label: string;
+    description: string | null;
+    optional: boolean;
+}
+export interface EmailFieldConfig {
+    label: string;
+    description: string | null;
+    optional: boolean;
+    allowedDomains: {
+        domain: string;
+        exact: boolean;
+    }[] | null;
+}
+export interface PhoneFieldConfig {
+    label: string;
+    description: string | null;
+    optional: boolean;
+    allowedCountries: string[] | null;
+}
+export interface UrlFieldConfig {
+    label: string;
+    description: string | null;
+    optional: boolean;
+    allowedDomains: {
+        domain: string;
+        exact: boolean;
+    }[] | null;
+}
 export type WorkflowFormBlock = {
     key: string;
 } & ({
     type: WorkflowFormBlockType.CheckboxField;
     value: boolean | null;
-    [WorkflowFormBlockType.CheckboxField]: {
-        label: string;
-        description: string | null;
-        optional: boolean;
-    };
+    [WorkflowFormBlockType.CheckboxField]: CheckboxFieldConfig;
 } | {
     type: WorkflowFormBlockType.SingleSelectField;
     value: string | null;
-    [WorkflowFormBlockType.SingleSelectField]: {
-        options: {
-            label: string;
-            value: string;
-        }[];
-        label: string;
-        description: string | null;
-        optional: boolean;
-    };
+    [WorkflowFormBlockType.SingleSelectField]: SingleSelectFieldConfig;
 } | {
     type: WorkflowFormBlockType.TextField;
     value: string | null;
-    [WorkflowFormBlockType.TextField]: {
-        minLength: number | null;
-        maxLength: number | null;
-        pattern: {
-            value: string;
-            message: string;
-        } | null;
-        label: string;
-        description: string | null;
-        optional: boolean;
-    };
+    [WorkflowFormBlockType.TextField]: TextFieldConfig;
 } | {
     type: WorkflowFormBlockType.FileField;
-    value: string[] | null;
-    [WorkflowFormBlockType.FileField]: {
-        maxSize: number | null;
-        allowedTypes: string[] | null;
-        multiple: boolean;
-        label: string;
-        description: string | null;
-        optional: boolean;
-    };
+    value: (File | WorkflowFormFile)[] | null;
+    [WorkflowFormBlockType.FileField]: FileFieldConfig;
 } | {
     type: WorkflowFormBlockType.EmailField;
     value: string | null;
-    [WorkflowFormBlockType.EmailField]: {
-        label: string;
-        description: string | null;
-        optional: boolean;
-        allowedDomains: {
-            domain: string;
-            exact: boolean;
-        }[] | null;
-    };
+    [WorkflowFormBlockType.EmailField]: EmailFieldConfig;
 } | {
     type: WorkflowFormBlockType.UrlField;
     value: string | null;
-    [WorkflowFormBlockType.UrlField]: {
-        label: string;
-        description: string | null;
-        optional: boolean;
-        allowedDomains: {
-            domain: string;
-            exact: boolean;
-        }[] | null;
-    };
+    [WorkflowFormBlockType.UrlField]: UrlFieldConfig;
 } | {
     type: WorkflowFormBlockType.PhoneField;
     value: string | null;
-    [WorkflowFormBlockType.PhoneField]: {
-        label: string;
-        description: string | null;
-        optional: boolean;
-        allowedCountries: string[] | null;
-    };
+    [WorkflowFormBlockType.PhoneField]: PhoneFieldConfig;
 } | {
     type: WorkflowFormBlockType.HeadingOne;
     [WorkflowFormBlockType.HeadingOne]: WorkflowFormText[];
