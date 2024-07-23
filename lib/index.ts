@@ -374,23 +374,20 @@ export default function getBlockSchema(
     }
     case WorkflowFormBlockType.PhoneField: {
       const phoneField = block[WorkflowFormBlockType.PhoneField];
+      let defaultCountry: undefined | string;
+
+      if (typeof navigator !== "undefined") {
+        defaultCountry = navigator.language.split("-")[1] as string;
+      }
+
+      if (defaultCountry !== undefined && !isSupportedCountry(defaultCountry)) {
+        defaultCountry = undefined;
+      }
+
       const schema = zod
         .string()
         .superRefine((val, ctx) => {
           try {
-            let defaultCountry: undefined | string = undefined;
-
-            if (typeof navigator !== "undefined") {
-              defaultCountry = navigator.language.split("-")[1] as string;
-            }
-
-            if (
-              defaultCountry !== undefined &&
-              !isSupportedCountry(defaultCountry)
-            ) {
-              defaultCountry = undefined;
-            }
-
             const phoneNumber = parsePhoneNumber(val, {
               defaultCountry,
             });
@@ -431,7 +428,9 @@ export default function getBlockSchema(
           }
         })
         .transform((val) => {
-          const phoneNumber = parsePhoneNumber(val);
+          const phoneNumber = parsePhoneNumber(val, {
+            defaultCountry,
+          });
           return phoneNumber.format("E.164");
         });
       if (allowNullish || phoneField.optional) {

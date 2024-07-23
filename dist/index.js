@@ -177,18 +177,17 @@ function getBlockSchema(block, allowNullish = false) {
         }
         case WorkflowFormBlockType.PhoneField: {
             const phoneField = block[WorkflowFormBlockType.PhoneField];
+            let defaultCountry;
+            if (typeof navigator !== "undefined") {
+                defaultCountry = navigator.language.split("-")[1];
+            }
+            if (defaultCountry !== undefined && !(0, libphonenumber_js_1.isSupportedCountry)(defaultCountry)) {
+                defaultCountry = undefined;
+            }
             const schema = zod_1.default
                 .string()
                 .superRefine((val, ctx) => {
                 try {
-                    let defaultCountry = undefined;
-                    if (typeof navigator !== "undefined") {
-                        defaultCountry = navigator.language.split("-")[1];
-                    }
-                    if (defaultCountry !== undefined &&
-                        !(0, libphonenumber_js_1.isSupportedCountry)(defaultCountry)) {
-                        defaultCountry = undefined;
-                    }
                     const phoneNumber = (0, libphonenumber_js_1.parsePhoneNumber)(val, {
                         defaultCountry,
                     });
@@ -218,7 +217,9 @@ function getBlockSchema(block, allowNullish = false) {
                 }
             })
                 .transform((val) => {
-                const phoneNumber = (0, libphonenumber_js_1.parsePhoneNumber)(val);
+                const phoneNumber = (0, libphonenumber_js_1.parsePhoneNumber)(val, {
+                    defaultCountry,
+                });
                 return phoneNumber.format("E.164");
             });
             if (allowNullish || phoneField.optional) {
