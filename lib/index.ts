@@ -182,7 +182,56 @@ export default function getBlockSchema(
   switch (block.type) {
     case WorkflowFormBlockType.FileField: {
       const fileField = block[WorkflowFormBlockType.FileField];
-      let schema = zod.array(zod.any());
+
+      let typeSchema: zod.ZodSchema = zod.string();
+
+      if (fileField.allowedTypes) {
+        const formatter = new Intl.ListFormat("en-AU", {
+          style: "long",
+          type: "disjunction",
+        });
+        typeSchema = typeSchema.refine(
+          (value) => fileField.allowedTypes!.includes(value),
+          {
+            message: `File must be of type ${formatter.format(
+              fileField.allowedTypes.map((type) => `"${type}"`)
+            )}`,
+          }
+        );
+      }
+
+      let sizeSchema = zod.number();
+
+      if (fileField.maxSize !== null) {
+        sizeSchema = sizeSchema.max(fileField.maxSize);
+      }
+
+      const remoteFileSchema = zod.intersection(
+        zod.object({
+          type: typeSchema,
+          size: sizeSchema,
+        }),
+        zod.record(zod.string(), zod.union([zod.string(), zod.number()]))
+      );
+
+      let schema: zod.ZodArray<any> = zod.array(remoteFileSchema);
+
+      if ("File" in globalThis) {
+        const fileSchema = zod.instanceof(File).superRefine((value, ctx) => {
+          (
+            [
+              [sizeSchema, "size"],
+              [typeSchema, "type"],
+            ] as const
+          ).forEach(([schema, key]) => {
+            schema.safeParse(value[key]).error?.issues.forEach((issue) => {
+              ctx.addIssue(issue);
+            });
+          });
+        });
+        schema = zod.array(zod.union([fileSchema, remoteFileSchema]));
+      }
+
       if (!fileField.multiple) {
         schema = schema.max(1, "Only one file is allowed");
       }

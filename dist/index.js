@@ -47,7 +47,38 @@ function getBlockSchema(block, allowNullish = false) {
     switch (block.type) {
         case WorkflowFormBlockType.FileField: {
             const fileField = block[WorkflowFormBlockType.FileField];
-            let schema = zod_1.default.array(zod_1.default.any());
+            let typeSchema = zod_1.default.string();
+            if (fileField.allowedTypes) {
+                const formatter = new Intl.ListFormat("en-AU", {
+                    style: "long",
+                    type: "disjunction",
+                });
+                typeSchema = typeSchema.refine((value) => fileField.allowedTypes.includes(value), {
+                    message: `File must be of type ${formatter.format(fileField.allowedTypes.map((type) => `"${type}"`))}`,
+                });
+            }
+            let sizeSchema = zod_1.default.number();
+            if (fileField.maxSize !== null) {
+                sizeSchema = sizeSchema.max(fileField.maxSize);
+            }
+            const remoteFileSchema = zod_1.default.intersection(zod_1.default.object({
+                type: typeSchema,
+                size: sizeSchema,
+            }), zod_1.default.record(zod_1.default.string(), zod_1.default.union([zod_1.default.string(), zod_1.default.number()])));
+            let schema = zod_1.default.array(remoteFileSchema);
+            if ("File" in globalThis) {
+                const fileSchema = zod_1.default.instanceof(File).superRefine((value, ctx) => {
+                    [
+                        [sizeSchema, "size"],
+                        [typeSchema, "type"],
+                    ].forEach(([schema, key]) => {
+                        schema.safeParse(value[key]).error?.issues.forEach((issue) => {
+                            ctx.addIssue(issue);
+                        });
+                    });
+                });
+                schema = zod_1.default.array(zod_1.default.union([fileSchema, remoteFileSchema]));
+            }
             if (!fileField.multiple) {
                 schema = schema.max(1, "Only one file is allowed");
             }

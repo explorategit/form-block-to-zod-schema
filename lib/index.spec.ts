@@ -162,7 +162,7 @@ describe("getBlockSchema", () => {
         schema?.parse([
           {
             type: "application/pdf",
-            size: 1024,
+            size: 1023,
           },
         ])
       ).not.toThrow();
@@ -202,7 +202,7 @@ describe("getBlockSchema", () => {
         schema?.parse([
           {
             type: "application/pdf",
-            size: 1024,
+            size: 1023,
           },
         ])
       ).not.toThrow();
