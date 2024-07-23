@@ -167,15 +167,27 @@ describe("getBlockSchema", () => {
         ])
       ).not.toThrow();
       expect(() =>
+        schema?.parse([new File([""], "", { type: "application/pdf" })])
+      ).not.toThrow();
+      expect(() =>
         schema?.parse([
           {
             type: "application/pdf",
             size: 1025,
           },
+        ])
+      ).toThrow();
+      expect(() =>
+        schema?.parse([
           {
-            type: "application/msword",
-            size: 1024,
+            type: "application/json",
+            size: 1023,
           },
+        ])
+      ).toThrow();
+      expect(() =>
+        schema?.parse([
+          new File(["x".repeat(1025)], "", { type: "application/pdf" }),
         ])
       ).toThrow();
       expect(() => schema?.parse([])).toThrow();

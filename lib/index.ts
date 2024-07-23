@@ -179,6 +179,7 @@ export default function getBlockSchema(
   block: WorkflowFormBlock,
   allowNullish: boolean = false
 ): zod.ZodSchema | null {
+  console.log("ASD");
   switch (block.type) {
     case WorkflowFormBlockType.FileField: {
       const fileField = block[WorkflowFormBlockType.FileField];
