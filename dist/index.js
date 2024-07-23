@@ -44,7 +44,6 @@ function getOptionalStringSchema(schema) {
  * @returns
  */
 function getBlockSchema(block, allowNullish = false) {
-    console.log("ASD");
     switch (block.type) {
         case WorkflowFormBlockType.FileField: {
             const fileField = block[WorkflowFormBlockType.FileField];
