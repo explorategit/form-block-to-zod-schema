@@ -1,4 +1,10 @@
 import zod from "zod";
+type JSONPrimitive = string | number | boolean | null;
+type JSONObject = {
+    [key: string]: JSONValue;
+};
+type JSONArray = JSONValue[];
+type JSONValue = JSONPrimitive | JSONObject | JSONArray;
 export declare enum WorkflowFormBlockType {
     SingleSelectField = "single_select_field",
     TextField = "text_field",
@@ -22,14 +28,12 @@ export interface WorkflowFormFile {
     size: number;
     uploadedAt: string;
 }
-export interface WorkflowFormText {
+export interface TextNode {
     content: string;
     url: string | null;
-    model: {
-        id: number;
-        name: string;
-        attribute: string;
-    } | null;
+}
+export interface TextConfig {
+    nodes: TextNode[];
 }
 export interface CheckboxFieldConfig {
     label: string;
@@ -92,46 +96,39 @@ export type WorkflowFormBlock = {
     key: string;
 } & ({
     type: WorkflowFormBlockType.CheckboxField;
-    value: boolean | null;
     [WorkflowFormBlockType.CheckboxField]: CheckboxFieldConfig;
 } | {
     type: WorkflowFormBlockType.SingleSelectField;
-    value: string | null;
     [WorkflowFormBlockType.SingleSelectField]: SingleSelectFieldConfig;
 } | {
     type: WorkflowFormBlockType.TextField;
-    value: string | null;
     [WorkflowFormBlockType.TextField]: TextFieldConfig;
 } | {
     type: WorkflowFormBlockType.FileField;
-    value: (File | WorkflowFormFile)[] | null;
     [WorkflowFormBlockType.FileField]: FileFieldConfig;
 } | {
     type: WorkflowFormBlockType.EmailField;
-    value: string | null;
     [WorkflowFormBlockType.EmailField]: EmailFieldConfig;
 } | {
     type: WorkflowFormBlockType.UrlField;
-    value: string | null;
     [WorkflowFormBlockType.UrlField]: UrlFieldConfig;
 } | {
     type: WorkflowFormBlockType.PhoneField;
-    value: string | null;
     [WorkflowFormBlockType.PhoneField]: PhoneFieldConfig;
 } | {
     type: WorkflowFormBlockType.HeadingOne;
-    [WorkflowFormBlockType.HeadingOne]: WorkflowFormText[];
+    [WorkflowFormBlockType.HeadingOne]: TextConfig;
 } | {
     type: WorkflowFormBlockType.HeadingTwo;
-    [WorkflowFormBlockType.HeadingTwo]: WorkflowFormText[];
+    [WorkflowFormBlockType.HeadingTwo]: TextConfig;
 } | {
     type: WorkflowFormBlockType.HeadingThree;
-    [WorkflowFormBlockType.HeadingThree]: WorkflowFormText[];
+    [WorkflowFormBlockType.HeadingThree]: TextConfig;
 } | {
     type: WorkflowFormBlockType.Divider;
 } | {
     type: WorkflowFormBlockType.Paragraph;
-    [WorkflowFormBlockType.Paragraph]: WorkflowFormText[];
+    [WorkflowFormBlockType.Paragraph]: TextConfig;
 });
 export type WorkflowFormFieldBlock = Extract<WorkflowFormBlock, {
     type: WorkflowFormFieldBlockTypes;
@@ -142,4 +139,5 @@ export type WorkflowFormFieldBlock = Extract<WorkflowFormBlock, {
  * @param allowNullish - Whether to allow nullish values. If true, the schema will be optional regardless of the block's configuration. If false, the schema will be only be optional if the block is optional.
  * @returns
  */
-export default function getBlockSchema(block: WorkflowFormBlock, allowNullish?: boolean): zod.ZodSchema | null;
+export default function getBlockSchema(block: WorkflowFormBlock, allowNullish?: boolean): zod.ZodSchema<JSONValue | undefined> | null;
+export {};

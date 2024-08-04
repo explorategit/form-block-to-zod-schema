@@ -6,7 +6,6 @@ describe("getBlockSchema", () => {
       const block: WorkflowFormBlock = {
         key: "",
         type: WorkflowFormBlockType.CheckboxField,
-        value: false,
         [WorkflowFormBlockType.CheckboxField]: {
           label: "I agree to the terms and conditions",
           optional: false,
@@ -24,7 +23,6 @@ describe("getBlockSchema", () => {
       const block: WorkflowFormBlock = {
         key: "",
         type: WorkflowFormBlockType.CheckboxField,
-        value: false,
         [WorkflowFormBlockType.CheckboxField]: {
           label: "I agree to the terms and conditions",
           optional: true,
@@ -44,7 +42,6 @@ describe("getBlockSchema", () => {
       const block: WorkflowFormBlock = {
         key: "",
         type: WorkflowFormBlockType.SingleSelectField,
-        value: null,
         [WorkflowFormBlockType.SingleSelectField]: {
           label: "Select a color",
           optional: false,
@@ -69,7 +66,6 @@ describe("getBlockSchema", () => {
       const block: WorkflowFormBlock = {
         key: "",
         type: WorkflowFormBlockType.SingleSelectField,
-        value: null,
         [WorkflowFormBlockType.SingleSelectField]: {
           label: "Select a color",
           optional: true,
@@ -96,7 +92,6 @@ describe("getBlockSchema", () => {
       const block: WorkflowFormBlock = {
         key: "",
         type: WorkflowFormBlockType.TextField,
-        value: null,
         [WorkflowFormBlockType.TextField]: {
           label: "Enter your name",
           optional: false,
@@ -119,7 +114,6 @@ describe("getBlockSchema", () => {
       const block: WorkflowFormBlock = {
         key: "",
         type: WorkflowFormBlockType.TextField,
-        value: null,
         [WorkflowFormBlockType.TextField]: {
           label: "Enter your name",
           optional: true,
@@ -145,7 +139,6 @@ describe("getBlockSchema", () => {
       const block: WorkflowFormBlock = {
         key: "",
         type: WorkflowFormBlockType.FileField,
-        value: [],
         [WorkflowFormBlockType.FileField]: {
           label: "Upload your resume",
           optional: false,
@@ -197,7 +190,6 @@ describe("getBlockSchema", () => {
       const block: WorkflowFormBlock = {
         key: "",
         type: WorkflowFormBlockType.FileField,
-        value: null,
         [WorkflowFormBlockType.FileField]: {
           label: "Upload your resume",
           optional: true,
@@ -238,7 +230,6 @@ describe("getBlockSchema", () => {
       const block: WorkflowFormBlock = {
         key: "",
         type: WorkflowFormBlockType.EmailField,
-        value: null,
         [WorkflowFormBlockType.EmailField]: {
           label: "Enter your email",
           optional: false,
@@ -262,7 +253,6 @@ describe("getBlockSchema", () => {
       const block: WorkflowFormBlock = {
         key: "",
         type: WorkflowFormBlockType.EmailField,
-        value: null,
         [WorkflowFormBlockType.EmailField]: {
           label: "Enter your email",
           optional: true,
@@ -278,7 +268,7 @@ describe("getBlockSchema", () => {
       const schema = getBlockSchema(block);
 
       expect(schema).toBeDefined();
-      expect(() => schema?.parse("mark@explorate.co").not.toThrow());
+      expect(() => schema?.parse("mark@explorate.co")).not.toThrow();
       expect(() => schema?.parse("mark@gmail.com")).toThrow();
       expect(() => schema?.parse(undefined)).not.toThrow();
       expect(schema?.parse("")).toBe(undefined);
@@ -287,7 +277,6 @@ describe("getBlockSchema", () => {
       const block: WorkflowFormBlock = {
         key: "",
         type: WorkflowFormBlockType.EmailField,
-        value: null,
         [WorkflowFormBlockType.EmailField]: {
           label: "Enter your email",
           optional: false,
@@ -315,9 +304,8 @@ describe("getBlockSchema", () => {
   describe('When block is of type "UrlField"', () => {
     it('should return the schema for a "UrlField"', () => {
       const block: WorkflowFormBlock = {
-        type: WorkflowFormBlockType.UrlField,
         key: "",
-        value: null,
+        type: WorkflowFormBlockType.UrlField,
         [WorkflowFormBlockType.UrlField]: {
           label: "Enter your website",
           optional: false,
@@ -342,7 +330,6 @@ describe("getBlockSchema", () => {
       const block: WorkflowFormBlock = {
         key: "",
         type: WorkflowFormBlockType.UrlField,
-        value: null,
         [WorkflowFormBlockType.UrlField]: {
           label: "Enter your website",
           optional: true,
@@ -368,7 +355,6 @@ describe("getBlockSchema", () => {
       const block: WorkflowFormBlock = {
         key: "",
         type: WorkflowFormBlockType.UrlField,
-        value: null,
         [WorkflowFormBlockType.UrlField]: {
           label: "Enter your website",
           optional: false,
@@ -399,7 +385,6 @@ describe("getBlockSchema", () => {
       const block: WorkflowFormBlock = {
         key: "",
         type: WorkflowFormBlockType.PhoneField,
-        value: null,
         [WorkflowFormBlockType.PhoneField]: {
           label: "Enter your phone number",
           optional: false,
@@ -418,7 +403,6 @@ describe("getBlockSchema", () => {
       const block: WorkflowFormBlock = {
         key: "",
         type: WorkflowFormBlockType.PhoneField,
-        value: null,
         [WorkflowFormBlockType.PhoneField]: {
           label: "Enter your phone number",
           optional: true,
@@ -438,7 +422,6 @@ describe("getBlockSchema", () => {
       const block: WorkflowFormBlock = {
         key: "",
         type: WorkflowFormBlockType.PhoneField,
-        value: null,
         [WorkflowFormBlockType.PhoneField]: {
           label: "Enter your phone number",
           optional: false,
@@ -460,7 +443,6 @@ describe("getBlockSchema", () => {
       const block: WorkflowFormBlock = {
         key: "",
         type: "UnknownType" as never,
-        value: null,
       };
       const schema = getBlockSchema(block);
 
