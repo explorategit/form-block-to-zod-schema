@@ -8,7 +8,7 @@ import zod from "zod";
 
 type JSONPrimitive = string | number | boolean | null;
 
-type JSONObject = { [key: string]: JSONValue };
+type JSONObject = { [key: string]: JSONValue | undefined };
 
 type JSONArray = JSONValue[];
 
