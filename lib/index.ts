@@ -247,10 +247,12 @@ export default function getBlockSchema(
               [sizeSchema, "size"],
               [typeSchema, "type"],
             ] as const
-          ).forEach(([schema, key]) => {
-            schema.safeParse(value[key]).error?.issues.forEach((issue) => {
-              ctx.addIssue(issue);
-            });
+          ).forEach(([schema, key], index) => {
+            schema
+              .safeParse(value[key], { path: [index] })
+              .error?.issues.forEach((issue) => {
+                ctx.addIssue(issue);
+              });
           });
         });
         schema = zod.array(zod.union([fileSchema, remoteFileSchema]));
