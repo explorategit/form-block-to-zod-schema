@@ -42,30 +42,30 @@ export const workflowFormFieldBlockTypes = [
 export type WorkflowFormFieldBlockTypes =
   (typeof workflowFormFieldBlockTypes)[number];
 
-export interface WorkflowFormFile {
+export type WorkflowFormFile = {
   type: string;
   name: string;
   key: string;
   size: number;
   uploadedAt: string;
-}
+};
 
-export interface TextNode {
+export type TextNode = {
   content: string;
   url: string | null;
-}
+};
 
-export interface TextConfig {
+export type TextConfig = {
   nodes: TextNode[];
-}
+};
 
-export interface CheckboxFieldConfig {
+export type CheckboxFieldConfig = {
   label: string;
   description: string | null;
   optional: boolean;
-}
+};
 
-export interface SingleSelectFieldConfig {
+export type SingleSelectFieldConfig = {
   options: {
     label: string;
     value: string;
@@ -73,9 +73,9 @@ export interface SingleSelectFieldConfig {
   label: string;
   description: string | null;
   optional: boolean;
-}
+};
 
-export interface TextFieldConfig {
+export type TextFieldConfig = {
   minLength: number | null;
   maxLength: number | null;
   pattern: {
@@ -85,18 +85,18 @@ export interface TextFieldConfig {
   label: string;
   description: string | null;
   optional: boolean;
-}
+};
 
-export interface FileFieldConfig {
+export type FileFieldConfig = {
   maxSize: number | null;
   allowedTypes: string[] | null;
   multiple: boolean;
   label: string;
   description: string | null;
   optional: boolean;
-}
+};
 
-export interface EmailFieldConfig {
+export type EmailFieldConfig = {
   label: string;
   description: string | null;
   optional: boolean;
@@ -106,16 +106,16 @@ export interface EmailFieldConfig {
         exact: boolean;
       }[]
     | null;
-}
+};
 
-export interface PhoneFieldConfig {
+export type PhoneFieldConfig = {
   label: string;
   description: string | null;
   optional: boolean;
   allowedCountries: string[] | null;
-}
+};
 
-export interface UrlFieldConfig {
+export type UrlFieldConfig = {
   label: string;
   description: string | null;
   optional: boolean;
@@ -125,7 +125,7 @@ export interface UrlFieldConfig {
         exact: boolean;
       }[]
     | null;
-}
+};
 
 export type WorkflowFormBlock = {
   key: string;
