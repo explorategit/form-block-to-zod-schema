@@ -1,7 +1,9 @@
 import zod from "zod";
 type JSONPrimitive = string | number | boolean | null;
 type JSONObject = {
-    [key: string]: JSONValue | undefined;
+    [Key in string]: JSONValue;
+} & {
+    [Key in string]?: JSONValue;
 };
 type JSONArray = JSONValue[];
 type JSONValue = JSONPrimitive | JSONObject | JSONArray;
