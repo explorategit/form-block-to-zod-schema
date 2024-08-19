@@ -17,7 +17,7 @@ type JSONArray = JSONValue[];
 type JSONValue = JSONPrimitive | JSONObject | JSONArray;
 
 export enum WorkflowFormBlockType {
-  SingleSelectField = "single_select_field",
+  SelectField = "select_field",
   TextField = "text_field",
   FileField = "file_field",
   CheckboxField = "checkbox_field",
@@ -33,7 +33,7 @@ export enum WorkflowFormBlockType {
 
 export const workflowFormFieldBlockTypes = [
   WorkflowFormBlockType.CheckboxField,
-  WorkflowFormBlockType.SingleSelectField,
+  WorkflowFormBlockType.SelectField,
   WorkflowFormBlockType.TextField,
   WorkflowFormBlockType.FileField,
   WorkflowFormBlockType.EmailField,
@@ -67,12 +67,13 @@ export type CheckboxFieldConfig = {
   optional: boolean;
 };
 
-export type SingleSelectFieldConfig = {
+export type SelectFieldConfig = {
   options: {
     label: string;
     value: string;
   }[];
   label: string;
+  multiple: boolean;
   description: string | null;
   optional: boolean;
 };
@@ -137,8 +138,8 @@ export type WorkflowFormBlock = {
       [WorkflowFormBlockType.CheckboxField]: CheckboxFieldConfig;
     }
   | {
-      type: WorkflowFormBlockType.SingleSelectField;
-      [WorkflowFormBlockType.SingleSelectField]: SingleSelectFieldConfig;
+      type: WorkflowFormBlockType.SelectField;
+      [WorkflowFormBlockType.SelectField]: SelectFieldConfig;
     }
   | {
       type: WorkflowFormBlockType.TextField;
@@ -276,24 +277,29 @@ export default function getBlockSchema(
       }
       return schema;
     }
-    case WorkflowFormBlockType.SingleSelectField: {
-      const singleSelectField = block[WorkflowFormBlockType.SingleSelectField];
-      const values = singleSelectField.options.map(
+    case WorkflowFormBlockType.SelectField: {
+      const selectField = block[WorkflowFormBlockType.SelectField];
+      const values = selectField.options.map(
         (option) => option.value
       ) as readonly string[];
       const formatter = new Intl.ListFormat("en-AU", {
         style: "long",
         type: "disjunction",
       });
-      let schema = zod.string().refine((value) => values.includes(value), {
-        message: `Must be one of ${formatter.format(
-          singleSelectField.options.map(({ label }) => `\`${label}\``)
-        )}.`,
-      });
-      if (allowNullish || singleSelectField.optional) {
-        return schema.nullish();
+      let schema = zod.array(
+        zod.string().refine((value) => values.includes(value), {
+          message: `Must be one of ${formatter.format(
+            selectField.options.map(({ label }) => `\`${label}\``)
+          )}.`,
+        })
+      );
+      if (!selectField.multiple) {
+        schema = schema.max(1, "Only one option is allowed");
       }
-      return schema;
+      if (allowNullish || selectField.optional) {
+        return schema.optional();
+      }
+      return schema.min(1, "At least one option is required");
     }
     case WorkflowFormBlockType.TextField: {
       const textField = block[WorkflowFormBlockType.TextField];

@@ -9,7 +9,7 @@ const libphonenumber_js_1 = require("libphonenumber-js");
 const zod_1 = __importDefault(require("zod"));
 var WorkflowFormBlockType;
 (function (WorkflowFormBlockType) {
-    WorkflowFormBlockType["SingleSelectField"] = "single_select_field";
+    WorkflowFormBlockType["SelectField"] = "select_field";
     WorkflowFormBlockType["TextField"] = "text_field";
     WorkflowFormBlockType["FileField"] = "file_field";
     WorkflowFormBlockType["CheckboxField"] = "checkbox_field";
@@ -24,7 +24,7 @@ var WorkflowFormBlockType;
 })(WorkflowFormBlockType || (exports.WorkflowFormBlockType = WorkflowFormBlockType = {}));
 exports.workflowFormFieldBlockTypes = [
     WorkflowFormBlockType.CheckboxField,
-    WorkflowFormBlockType.SingleSelectField,
+    WorkflowFormBlockType.SelectField,
     WorkflowFormBlockType.TextField,
     WorkflowFormBlockType.FileField,
     WorkflowFormBlockType.EmailField,
@@ -97,20 +97,23 @@ function getBlockSchema(block, allowNullish = false) {
             }
             return schema;
         }
-        case WorkflowFormBlockType.SingleSelectField: {
-            const singleSelectField = block[WorkflowFormBlockType.SingleSelectField];
-            const values = singleSelectField.options.map((option) => option.value);
+        case WorkflowFormBlockType.SelectField: {
+            const selectField = block[WorkflowFormBlockType.SelectField];
+            const values = selectField.options.map((option) => option.value);
             const formatter = new Intl.ListFormat("en-AU", {
                 style: "long",
                 type: "disjunction",
             });
-            let schema = zod_1.default.string().refine((value) => values.includes(value), {
-                message: `Must be one of ${formatter.format(singleSelectField.options.map(({ label }) => `\`${label}\``))}.`,
-            });
-            if (allowNullish || singleSelectField.optional) {
-                return schema.nullish();
+            let schema = zod_1.default.array(zod_1.default.string().refine((value) => values.includes(value), {
+                message: `Must be one of ${formatter.format(selectField.options.map(({ label }) => `\`${label}\``))}.`,
+            }));
+            if (!selectField.multiple) {
+                schema = schema.max(1, "Only one option is allowed");
             }
-            return schema;
+            if (allowNullish || selectField.optional) {
+                return schema.optional();
+            }
+            return schema.min(1, "At least one option is required");
         }
         case WorkflowFormBlockType.TextField: {
             const textField = block[WorkflowFormBlockType.TextField];

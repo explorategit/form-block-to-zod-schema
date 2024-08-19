@@ -37,15 +37,16 @@ describe("getBlockSchema", () => {
       expect(() => schema!.parse(undefined)).not.toThrow();
     });
   });
-  describe('When block is of type "SingleSelectField"', () => {
-    it('should return the schema for a "SingleSelectField"', () => {
+  describe('When block is of type "SelectField"', () => {
+    it('should return the schema for a "SelectField"', () => {
       const block: WorkflowFormBlock = {
         key: "",
-        type: WorkflowFormBlockType.SingleSelectField,
-        [WorkflowFormBlockType.SingleSelectField]: {
+        type: WorkflowFormBlockType.SelectField,
+        [WorkflowFormBlockType.SelectField]: {
           label: "Select a color",
           optional: false,
           description: null,
+          multiple: false,
           options: [
             { label: "Red", value: "red" },
             { label: "Green", value: "green" },
@@ -56,20 +57,22 @@ describe("getBlockSchema", () => {
       const schema = getBlockSchema(block);
 
       expect(schema).toBeDefined();
-      expect(() => schema!.parse("red")).not.toThrow();
-      expect(() => schema!.parse("green")).not.toThrow();
-      expect(() => schema!.parse("blue")).not.toThrow();
-      expect(() => schema!.parse("yellow")).toThrow();
+      expect(() => schema!.parse(["red"])).not.toThrow();
+      expect(() => schema!.parse(["green"])).not.toThrow();
+      expect(() => schema!.parse(["blue"])).not.toThrow();
+      expect(() => schema!.parse(["yellow"])).toThrow();
       expect(() => schema!.parse(undefined)).toThrow();
+      expect(() => schema!.parse([])).toThrow();
     });
-    it('should return an optional schema for a "SingleSelectField"', () => {
+    it('should return an optional schema for a "SelectField"', () => {
       const block: WorkflowFormBlock = {
         key: "",
-        type: WorkflowFormBlockType.SingleSelectField,
-        [WorkflowFormBlockType.SingleSelectField]: {
+        type: WorkflowFormBlockType.SelectField,
+        [WorkflowFormBlockType.SelectField]: {
           label: "Select a color",
           optional: true,
           description: null,
+          multiple: false,
           options: [
             { label: "Red", value: "red" },
             { label: "Green", value: "green" },
@@ -80,11 +83,33 @@ describe("getBlockSchema", () => {
       const schema = getBlockSchema(block);
 
       expect(schema).toBeDefined();
-      expect(() => schema!.parse("red")).not.toThrow();
-      expect(() => schema!.parse("green")).not.toThrow();
-      expect(() => schema!.parse("blue")).not.toThrow();
-      expect(() => schema!.parse("yellow")).toThrow();
+      expect(() => schema!.parse(["red"])).not.toThrow();
+      expect(() => schema!.parse(["green"])).not.toThrow();
+      expect(() => schema!.parse(["blue"])).not.toThrow();
+      expect(() => schema!.parse(["yellow"])).toThrow();
       expect(() => schema!.parse(undefined)).not.toThrow();
+      expect(() => schema!.parse([])).not.toThrow();
+    });
+    it('should return the schema for a "SelectField" with multiple options', () => {
+      const block: WorkflowFormBlock = {
+        key: "",
+        type: WorkflowFormBlockType.SelectField,
+        [WorkflowFormBlockType.SelectField]: {
+          label: "Select a color",
+          optional: false,
+          description: null,
+          multiple: true,
+          options: [
+            { label: "Red", value: "red" },
+            { label: "Green", value: "green" },
+            { label: "Blue", value: "blue" },
+          ],
+        },
+      };
+      const schema = getBlockSchema(block);
+
+      expect(schema).toBeDefined();
+      expect(() => schema!.parse(["red", "green", "blue"])).not.toThrow();
     });
   });
   describe('When block is of type "TextField"', () => {
