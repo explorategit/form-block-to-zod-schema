@@ -9,6 +9,7 @@ const libphonenumber_js_1 = require("libphonenumber-js");
 const zod_1 = __importDefault(require("zod"));
 var WorkflowFormBlockType;
 (function (WorkflowFormBlockType) {
+    WorkflowFormBlockType["IdField"] = "id_field";
     WorkflowFormBlockType["SelectField"] = "select_field";
     WorkflowFormBlockType["TextField"] = "text_field";
     WorkflowFormBlockType["FileField"] = "file_field";
@@ -23,6 +24,7 @@ var WorkflowFormBlockType;
     WorkflowFormBlockType["Paragraph"] = "paragraph";
 })(WorkflowFormBlockType || (exports.WorkflowFormBlockType = WorkflowFormBlockType = {}));
 exports.workflowFormFieldBlockTypes = [
+    WorkflowFormBlockType.IdField,
     WorkflowFormBlockType.CheckboxField,
     WorkflowFormBlockType.SelectField,
     WorkflowFormBlockType.TextField,
@@ -45,6 +47,13 @@ function getOptionalStringSchema(schema) {
  */
 function getBlockSchema(block, allowNullish = false) {
     switch (block.type) {
+        case WorkflowFormBlockType.IdField: {
+            const idField = block[WorkflowFormBlockType.IdField];
+            if (idField.type === "number") {
+                return zod_1.default.number();
+            }
+            return zod_1.default.string();
+        }
         case WorkflowFormBlockType.FileField: {
             const fileField = block[WorkflowFormBlockType.FileField];
             let typeSchema = zod_1.default.string();

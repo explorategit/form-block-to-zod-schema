@@ -17,6 +17,7 @@ type JSONArray = JSONValue[];
 type JSONValue = JSONPrimitive | JSONObject | JSONArray;
 
 export enum WorkflowFormBlockType {
+  IdField = "id_field",
   SelectField = "select_field",
   TextField = "text_field",
   FileField = "file_field",
@@ -32,6 +33,7 @@ export enum WorkflowFormBlockType {
 }
 
 export const workflowFormFieldBlockTypes = [
+  WorkflowFormBlockType.IdField,
   WorkflowFormBlockType.CheckboxField,
   WorkflowFormBlockType.SelectField,
   WorkflowFormBlockType.TextField,
@@ -59,6 +61,10 @@ export type TextNode = {
 
 export type TextConfig = {
   nodes: TextNode[];
+};
+
+export type IdFieldConfig = {
+  type: "number" | "string";
 };
 
 export type CheckboxFieldConfig = {
@@ -134,6 +140,10 @@ export type WorkflowFormBlock = {
   key: string;
 } & (
   | {
+      type: WorkflowFormBlockType.IdField;
+      [WorkflowFormBlockType.IdField]: IdFieldConfig;
+    }
+  | {
       type: WorkflowFormBlockType.CheckboxField;
       [WorkflowFormBlockType.CheckboxField]: CheckboxFieldConfig;
     }
@@ -205,6 +215,15 @@ export default function getBlockSchema(
   allowNullish: boolean = false
 ): zod.ZodSchema<JSONValue | undefined> | null {
   switch (block.type) {
+    case WorkflowFormBlockType.IdField: {
+      const idField = block[WorkflowFormBlockType.IdField];
+
+      if (idField.type === "number") {
+        return zod.number();
+      }
+
+      return zod.string();
+    }
     case WorkflowFormBlockType.FileField: {
       const fileField = block[WorkflowFormBlockType.FileField];
 

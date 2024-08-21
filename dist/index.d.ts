@@ -8,6 +8,7 @@ type JSONObject = {
 type JSONArray = JSONValue[];
 type JSONValue = JSONPrimitive | JSONObject | JSONArray;
 export declare enum WorkflowFormBlockType {
+    IdField = "id_field",
     SelectField = "select_field",
     TextField = "text_field",
     FileField = "file_field",
@@ -21,7 +22,7 @@ export declare enum WorkflowFormBlockType {
     Divider = "divider",
     Paragraph = "paragraph"
 }
-export declare const workflowFormFieldBlockTypes: readonly [WorkflowFormBlockType.CheckboxField, WorkflowFormBlockType.SelectField, WorkflowFormBlockType.TextField, WorkflowFormBlockType.FileField, WorkflowFormBlockType.EmailField, WorkflowFormBlockType.UrlField, WorkflowFormBlockType.PhoneField];
+export declare const workflowFormFieldBlockTypes: readonly [WorkflowFormBlockType.IdField, WorkflowFormBlockType.CheckboxField, WorkflowFormBlockType.SelectField, WorkflowFormBlockType.TextField, WorkflowFormBlockType.FileField, WorkflowFormBlockType.EmailField, WorkflowFormBlockType.UrlField, WorkflowFormBlockType.PhoneField];
 export type WorkflowFormFieldBlockTypes = (typeof workflowFormFieldBlockTypes)[number];
 export type WorkflowFormFile = {
     type: string;
@@ -36,6 +37,9 @@ export type TextNode = {
 };
 export type TextConfig = {
     nodes: TextNode[];
+};
+export type IdFieldConfig = {
+    type: "number" | "string";
 };
 export type CheckboxFieldConfig = {
     label: string;
@@ -98,6 +102,9 @@ export type UrlFieldConfig = {
 export type WorkflowFormBlock = {
     key: string;
 } & ({
+    type: WorkflowFormBlockType.IdField;
+    [WorkflowFormBlockType.IdField]: IdFieldConfig;
+} | {
     type: WorkflowFormBlockType.CheckboxField;
     [WorkflowFormBlockType.CheckboxField]: CheckboxFieldConfig;
 } | {
