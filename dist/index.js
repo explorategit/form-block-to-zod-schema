@@ -80,11 +80,13 @@ function getBlockSchema(block, allowNullish = false) {
                     [
                         [sizeSchema, "size"],
                         [typeSchema, "type"],
-                    ].forEach(([schema, key], index) => {
-                        schema
-                            .safeParse(value[key], { path: [index] })
-                            .error?.issues.forEach((issue) => {
-                            ctx.addIssue(issue);
+                    ].forEach(([schema, key]) => {
+                        schema.safeParse(value[key]).error?.issues.forEach((issue) => {
+                            ctx.addIssue({
+                                code: "custom",
+                                message: issue.message,
+                                path: [key],
+                            });
                         });
                     });
                 });
