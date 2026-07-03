@@ -82,10 +82,13 @@ function getBlockSchema(block, allowNullish = false) {
                         [typeSchema, "type"],
                     ].forEach(([schema, key]) => {
                         schema.safeParse(value[key]).error?.issues.forEach((issue) => {
-                            ctx.addIssue({
+                            // Use custom code for now until size and type schemas
+                            // contain error payloads with their own codes
+                            ctx.issues.push({
                                 code: "custom",
                                 message: issue.message,
                                 path: [key],
+                                input: value,
                             });
                         });
                     });
@@ -214,20 +217,26 @@ function getBlockSchema(block, allowNullish = false) {
                         });
                         if ((!phoneNumber.country && !defaultCountry) ||
                             !phoneField.allowedCountries.includes((phoneNumber.country ?? defaultCountry))) {
-                            ctx.addIssue({
-                                code: zod_1.default.ZodIssueCode.custom,
+                            // `fatal: true` becomes `continue: false` in Zod v4
+                            // (addIssue translated this for Zod v3 backwards compatibility), and
+                            // `input` is required on the raw issue shape (addIssue
+                            // defaulted it to the refined value for us).
+                            ctx.issues.push({
+                                code: "custom",
                                 message: `Phone number must be from ${formatter.format(phoneField.allowedCountries.map((countryCode) => `${countryCode} (+${(0, libphonenumber_js_1.getCountryCallingCode)(countryCode)})`))}`,
-                                fatal: true,
+                                input: val,
+                                continue: false,
                             });
                         }
                     }
                     return zod_1.default.NEVER;
                 }
                 catch (e) {
-                    ctx.addIssue({
-                        code: zod_1.default.ZodIssueCode.custom,
+                    ctx.issues.push({
+                        code: "custom",
                         message: "Invalid phone number",
-                        fatal: true,
+                        input: val,
+                        continue: false,
                     });
                     return zod_1.default.NEVER;
                 }

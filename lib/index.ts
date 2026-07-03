@@ -212,7 +212,7 @@ function getOptionalStringSchema(schema: zod.ZodSchema<string>) {
  */
 export default function getBlockSchema(
   block: WorkflowFormBlock,
-  allowNullish: boolean = false
+  allowNullish: boolean = false,
 ): zod.ZodSchema<JSONValue | undefined> | null {
   switch (block.type) {
     case WorkflowFormBlockType.IdField: {
@@ -238,9 +238,9 @@ export default function getBlockSchema(
           (value) => fileField.allowedTypes!.includes(value),
           {
             message: `File must be of type ${formatter.format(
-              fileField.allowedTypes.map((type) => `"${type}"`)
+              fileField.allowedTypes.map((type) => `"${type}"`),
             )}`,
-          }
+          },
         );
       }
 
@@ -255,7 +255,7 @@ export default function getBlockSchema(
           type: typeSchema,
           size: sizeSchema,
         }),
-        zod.record(zod.string(), zod.union([zod.string(), zod.number()]))
+        zod.record(zod.string(), zod.union([zod.string(), zod.number()])),
       );
 
       let schema: zod.ZodArray<any> = zod.array(remoteFileSchema);
@@ -269,10 +269,13 @@ export default function getBlockSchema(
             ] as const
           ).forEach(([schema, key]) => {
             schema.safeParse(value[key]).error?.issues.forEach((issue) => {
-              ctx.addIssue({
+              // Use custom code for now until size and type schemas
+              // contain error payloads with their own codes
+              ctx.issues.push({
                 code: "custom",
                 message: issue.message,
                 path: [key],
+                input: value,
               });
             });
           });
@@ -301,7 +304,7 @@ export default function getBlockSchema(
     case WorkflowFormBlockType.SelectField: {
       const selectField = block[WorkflowFormBlockType.SelectField];
       const values = selectField.options.map(
-        (option) => option.value
+        (option) => option.value,
       ) as readonly string[];
       const formatter = new Intl.ListFormat("en-AU", {
         style: "long",
@@ -310,9 +313,9 @@ export default function getBlockSchema(
       let schema = zod.array(
         zod.string().refine((value) => values.includes(value), {
           message: `Must be one of ${formatter.format(
-            selectField.options.map(({ label }) => `\`${label}\``)
+            selectField.options.map(({ label }) => `\`${label}\``),
           )}.`,
-        })
+        }),
       );
       if (!selectField.multiple) {
         schema = schema.max(1, "Only one option is allowed");
@@ -328,7 +331,7 @@ export default function getBlockSchema(
       if (textField.pattern) {
         schema = schema.regex(
           new RegExp(textField.pattern.value),
-          textField.pattern.message
+          textField.pattern.message,
         );
       }
       if (textField.minLength) {
@@ -354,14 +357,14 @@ export default function getBlockSchema(
           (value) => {
             const hostname = value.split("@")[1];
             return emailField.allowedDomains!.some(({ domain, exact }) =>
-              exact ? hostname === domain : hostname?.endsWith(domain)
+              exact ? hostname === domain : hostname?.endsWith(domain),
             );
           },
           {
             message: `Domain must be ${formatter.format(
-              emailField.allowedDomains.map(({ domain }) => `"${domain}"`)
+              emailField.allowedDomains.map(({ domain }) => `"${domain}"`),
             )}`,
-          }
+          },
         );
       }
       if (allowNullish || emailField.optional) {
@@ -385,7 +388,7 @@ export default function getBlockSchema(
             try {
               const url = new URL(value);
               return urlField.allowedDomains!.some(({ domain, exact }) =>
-                exact ? url.hostname === domain : url.hostname.endsWith(domain)
+                exact ? url.hostname === domain : url.hostname.endsWith(domain),
               );
             } catch {
               return false;
@@ -393,9 +396,9 @@ export default function getBlockSchema(
           },
           {
             message: `Domain must be ${formatter.format(
-              urlField.allowedDomains.map(({ domain }) => `"${domain}"`)
+              urlField.allowedDomains.map(({ domain }) => `"${domain}"`),
             )}`,
-          }
+          },
         );
       }
       if (allowNullish || urlField.optional) {
@@ -431,29 +434,35 @@ export default function getBlockSchema(
               if (
                 (!phoneNumber.country && !defaultCountry) ||
                 !phoneField.allowedCountries.includes(
-                  (phoneNumber.country ?? defaultCountry)!
+                  (phoneNumber.country ?? defaultCountry)!,
                 )
               ) {
-                ctx.addIssue({
-                  code: zod.ZodIssueCode.custom,
+                // `fatal: true` becomes `continue: false` in Zod v4
+                // (addIssue translated this for Zod v3 backwards compatibility), and
+                // `input` is required on the raw issue shape (addIssue
+                // defaulted it to the refined value for us).
+                ctx.issues.push({
+                  code: "custom",
                   message: `Phone number must be from ${formatter.format(
                     phoneField.allowedCountries.map(
                       (countryCode) =>
                         `${countryCode} (+${getCountryCallingCode(
-                          countryCode as CountryCode
-                        )})`
-                    )
+                          countryCode as CountryCode,
+                        )})`,
+                    ),
                   )}`,
-                  fatal: true,
+                  input: val,
+                  continue: false,
                 });
               }
             }
             return zod.NEVER;
           } catch (e) {
-            ctx.addIssue({
-              code: zod.ZodIssueCode.custom,
+            ctx.issues.push({
+              code: "custom",
               message: "Invalid phone number",
-              fatal: true,
+              input: val,
+              continue: false,
             });
             return zod.NEVER;
           }
