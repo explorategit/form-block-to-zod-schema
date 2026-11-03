@@ -227,7 +227,7 @@ export default function getBlockSchema(
     case WorkflowFormBlockType.FileField: {
       const fileField = block[WorkflowFormBlockType.FileField];
 
-      let typeSchema: zod.ZodSchema = zod.string();
+      let typeSchema: zod.ZodSchema<string> = zod.string();
 
       if (fileField.allowedTypes) {
         const formatter = new Intl.ListFormat("en-AU", {
@@ -267,12 +267,14 @@ export default function getBlockSchema(
               [sizeSchema, "size"],
               [typeSchema, "type"],
             ] as const
-          ).forEach(([schema, key], index) => {
-            schema
-              .safeParse(value[key], { path: [index] })
-              .error?.issues.forEach((issue) => {
-                ctx.addIssue(issue);
+          ).forEach(([schema, key]) => {
+            schema.safeParse(value[key]).error?.issues.forEach((issue) => {
+              ctx.addIssue({
+                code: "custom",
+                message: issue.message,
+                path: [key],
               });
+            });
           });
         });
         schema = zod.array(zod.union([fileSchema, remoteFileSchema]));
